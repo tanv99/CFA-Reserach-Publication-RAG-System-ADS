@@ -95,13 +95,13 @@ def show_navigation():
         # Navigation links
         selected_page = None
         
-        if st.sidebar.button("🏠  Dashboard", key="nav_home", use_container_width=True):
+        if st.sidebar.button("Dashboard", key="nav_home", use_container_width=True):
             selected_page = "Home"
             
-        if st.sidebar.button("📄  Page One", key="nav_page1", use_container_width=True):
+        if st.sidebar.button("Page One", key="nav_page1", use_container_width=True):
             selected_page = "Page One"
             
-        if st.sidebar.button("📊  Page Two", key="nav_page2", use_container_width=True):
+        if st.sidebar.button("Page Two", key="nav_page2", use_container_width=True):
             selected_page = "Page Two"
         
         # Add a separator before logout
@@ -185,7 +185,7 @@ def get_current_user(token):
 def main():
     if 'token' not in st.session_state:
         # Center the title
-        st.markdown("<h1 class='custom-title'>Welcome Back 👋</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 class='custom-title'>Welcome to Document Q/A System</h1>", unsafe_allow_html=True)
         
         # Create centered container for auth options
         col1, col2, col3 = st.columns([1, 2, 1])
