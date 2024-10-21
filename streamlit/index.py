@@ -3,6 +3,122 @@ import requests
 from dotenv import load_dotenv
 import os
 import pathlib
+import page1
+import page2
+
+st.set_page_config(
+    page_title="My Streamlit App",
+    page_icon="🔒",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for styling
+st.markdown("""
+    <style>
+        /* Center the main content */
+        .block-container {
+            padding-top: 2rem;
+            max-width: 700px;
+        }
+        
+        /* Style the authentication container */
+        .auth-container {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Style buttons */
+        .stButton > button {
+            width: 100%;
+            border-radius: 5px;
+            height: 2.5rem;
+            margin-top: 1rem;
+        }
+        
+        /* Style sidebar */
+        .css-1d391kg {
+            padding-top: 2rem;
+        }
+        
+        /* Style input fields */
+        .stTextInput > div > div > input {
+            border-radius: 5px;
+        }
+        
+        /* Custom title styling */
+        .custom-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            color: #0E1117;
+        }
+        
+        /* Center the login/register options */
+        .auth-options {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        /* Style navigation buttons */
+        .nav-button {
+            background-color: transparent;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        /* Success message styling */
+        .success-message {
+            padding: 1rem;
+            border-radius: 5px;
+            background-color: #d4edda;
+            color: #155724;
+            text-align: center;
+            margin: 1rem 0;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+def show_navigation():
+    with st.sidebar:
+        st.markdown("<h2 style='text-align: center;'>Navigation</h2>", unsafe_allow_html=True)
+        
+        # Add some spacing
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Navigation links
+        selected_page = None
+        
+        if st.sidebar.button("🏠  Dashboard", key="nav_home", use_container_width=True):
+            selected_page = "Home"
+            
+        if st.sidebar.button("📄  Page One", key="nav_page1", use_container_width=True):
+            selected_page = "Page One"
+            
+        if st.sidebar.button("📊  Page Two", key="nav_page2", use_container_width=True):
+            selected_page = "Page Two"
+        
+        # Add a separator before logout
+        st.markdown("<hr>", unsafe_allow_html=True)
+        
+        # Logout button with different styling
+        if st.sidebar.button("🚪  Logout", key="nav_logout", type="primary", use_container_width=True):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
+        
+        if selected_page:
+            st.session_state.current_page = selected_page
+            st.rerun()
+            
+        return st.session_state.get('current_page', "Home")
+    
 
 env_path = pathlib.Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -67,52 +183,79 @@ def get_current_user(token):
         return None
 
 def main():
-    st.title("User Authentication with FastAPI")
+    if 'token' not in st.session_state:
+        # Center the title
+        st.markdown("<h1 class='custom-title'>Welcome Back 👋</h1>", unsafe_allow_html=True)
+        
+        # Create centered container for auth options
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            # st.markdown("<div class='auth-container'>", unsafe_allow_html=True)
+            
+            # Login/Register toggle buttons
+            col_login, col_register = st.columns(2)
+            with col_login:
+                if st.button("Login", use_container_width=True):
+                    st.session_state.show_login = True
+                    st.session_state.show_register = False
+            with col_register:
+                if st.button("Register", use_container_width=True):
+                    st.session_state.show_register = True
+                    st.session_state.show_login = False
 
-    if 'show_login' not in st.session_state:
-        st.session_state.show_login = False
-    if 'show_register' not in st.session_state:
-        st.session_state.show_register = False
+            if 'show_login' not in st.session_state:
+                st.session_state.show_login = True
+            if 'show_register' not in st.session_state:
+                st.session_state.show_register = False
 
-    if st.button("Login"):
-        st.session_state.show_login = True
-        st.session_state.show_register = False
-    if st.button("Register"):
-        st.session_state.show_register = True
-        st.session_state.show_login = False
+            if st.session_state.show_login:
+                st.markdown("<h3 style='text-align: center; margin-top: 1rem;'>Login</h3>", unsafe_allow_html=True)
+                login_email = st.text_input("Email", key="login_email")
+                login_password = st.text_input("Password", type="password", key="login_password")
+                if st.button("Sign In", type="primary", use_container_width=True):
+                    if login_email and login_password:
+                        token = login_user(login_email, login_password)
+                        if token:
+                            st.session_state['token'] = token
+                            st.markdown("<div class='success-message'>Login successful!</div>", unsafe_allow_html=True)
+                            st.rerun()
+                    else:
+                        st.error("Please enter both email and password")
 
-    if st.session_state.show_login:
-        st.subheader("Login")
-        login_email = st.text_input("Enter email", key="login_email")
-        login_password = st.text_input("Enter password", type="password", key="login_password")
-        if st.button("Submit Login"):
-            if login_email and login_password:
-                token = login_user(login_email, login_password)
-                if token:
-                    st.session_state['token'] = token
-                    st.success("Login successful!")
-            else:
-                st.error("Please enter both email and password")
+            if st.session_state.show_register:
+                st.markdown("<h3 style='text-align: center; margin-top: 1rem;'>Create Account</h3>", unsafe_allow_html=True)
+                register_username = st.text_input("Username", key="register_username")
+                register_email = st.text_input("Email", key="register_email")
+                register_password = st.text_input("Password", type="password", key="register_password")
+                confirm_password = st.text_input("Confirm password", type="password", key="confirm_password")
+                if st.button("Sign Up", type="primary", use_container_width=True):
+                    if register_username and register_email and register_password and confirm_password:
+                        register_user(register_username, register_email, register_password, confirm_password)
+                    else:
+                        st.error("Please fill in all fields")
+            
+            st.markdown("</div>", unsafe_allow_html=True)
 
-    if st.session_state.show_register:
-        st.subheader("Register")
-        display_registration_instructions()
-
-        register_username = st.text_input("Enter username", key="register_username")
-        register_email = st.text_input("Enter email", key="register_email")
-        register_password = st.text_input("Enter password", type="password", key="register_password")
-        confirm_password = st.text_input("Confirm password", type="password", key="confirm_password")
-        if st.button("Submit Registration"):
-            if register_username and register_email and register_password and confirm_password:
-                register_user(register_username, register_email, register_password, confirm_password)
-            else:
-                st.error("Please fill in all fields")
-
-    if 'token' in st.session_state:
-        st.subheader("Logged in as:")
+    else:  # User is logged in
         user_info = get_current_user(st.session_state['token'])
         if user_info:
-            st.write(f"Email: {user_info['email']}")
+            selected_page = show_navigation()
+            
+            # Display user info in sidebar
+            with st.sidebar:
+                st.markdown("---")
+                st.markdown(f"<div style='text-align: center; padding: 1rem; background-color: #f8f9fa; border-radius: 5px;'>"
+                          f"<p>👤 <strong>{user_info['email']}</strong></p>"
+                          f"</div>", unsafe_allow_html=True)
+            
+            # Show selected page content
+            if selected_page == "Home":
+                st.markdown("<h1 style='text-align: center;'>Welcome to Dashboard</h1>", unsafe_allow_html=True)
+                st.markdown("<p style='text-align: center;'>Select a page from the sidebar to get started.</p>", unsafe_allow_html=True)
+            elif selected_page == "Page One":
+                page1.show()
+            elif selected_page == "Page Two":
+                page2.show()
 
 if __name__ == "__main__":
     main()
