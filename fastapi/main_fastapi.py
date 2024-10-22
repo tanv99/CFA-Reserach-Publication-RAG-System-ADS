@@ -215,7 +215,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         logger.error(f"Unexpected error during login: {str(e)}")
-        raise HTTPException(status_code=500, detail="An unexpected serror occurred")
+        raise HTTPException(status_code=500, detail="Please check your login credentials and try again")
     finally:
         connection.close()
 @app.get("/users/me")
