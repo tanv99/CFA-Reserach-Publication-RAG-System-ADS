@@ -1,0 +1,310 @@
+2024-10-21 21:11:21,212 - INFO - Successfully connected to GCP
+2024-10-21 21:11:21,212 - INFO - Scraping page 1
+2024-10-21 21:11:21,762 - INFO - Processing: Investment Data Alliance
+2024-10-21 21:11:22,289 - INFO - Successfully uploaded Investment Data Alliance.jpg
+2024-10-21 21:11:22,291 - INFO - Image uploaded: Investment Data Alliance.jpg
+2024-10-21 21:11:22,484 - INFO - Successfully uploaded Investment Data Alliance_summary.txt
+2024-10-21 21:11:22,484 - INFO - Summary uploaded: Investment Data Alliance_summary.txt
+2024-10-21 21:11:24,634 - INFO - Successfully uploaded Investment Data Alliance.pdf
+2024-10-21 21:11:24,634 - INFO - PDF uploaded: Investment Data Alliance.pdf
+2024-10-21 21:11:26,638 - INFO - No more pages to scrape
+2024-10-21 21:11:26,638 - INFO - Scraping completed successfully
+2024-10-21 21:13:40,268 - INFO - Successfully connected to GCP
+2024-10-21 21:13:40,268 - INFO - Scraping page 1
+2024-10-21 21:13:40,987 - INFO - No new publications found on page 1
+2024-10-21 21:13:44,321 - INFO - Scraping page 2
+2024-10-21 21:13:44,822 - INFO - No new publications found on page 2
+2024-10-21 21:13:48,076 - INFO - Scraping page 3
+2024-10-21 21:13:48,612 - INFO - No new publications found on page 3
+2024-10-21 21:13:51,843 - INFO - Scraping page 4
+2024-10-21 21:13:52,326 - INFO - No new publications found on page 4
+2024-10-21 21:13:55,555 - INFO - Scraping page 5
+2024-10-21 21:13:56,073 - INFO - No new publications found on page 5
+2024-10-21 21:13:59,345 - INFO - Scraping page 6
+2024-10-21 21:13:59,834 - INFO - No new publications found on page 6
+2024-10-21 21:30:38,431 - INFO - Successfully connected to GCP
+2024-10-21 21:30:38,435 - INFO - Scraping page 1
+2024-10-21 21:30:39,536 - INFO - Processing: Investment Data Alliance
+2024-10-21 21:30:40,083 - INFO - Successfully uploaded Investment Data Alliance.jpg
+2024-10-21 21:30:40,086 - INFO - Image uploaded: Investment Data Alliance.jpg
+2024-10-21 21:30:40,289 - INFO - Successfully uploaded Investment Data Alliance_summary.txt
+2024-10-21 21:30:40,289 - INFO - Summary uploaded: Investment Data Alliance_summary.txt
+2024-10-21 21:30:43,252 - INFO - Successfully uploaded Investment Data Alliance.pdf
+2024-10-21 21:30:43,252 - INFO - PDF uploaded: Investment Data Alliance.pdf
+2024-10-21 21:30:45,271 - INFO - Scraping page 2
+2024-10-21 21:30:45,727 - INFO - Scraping page 3
+2024-10-21 21:30:46,359 - INFO - Scraping page 4
+2024-10-21 21:30:46,884 - INFO - Scraping page 5
+2024-10-21 21:30:47,486 - INFO - Scraping page 6
+2024-10-21 21:30:47,827 - INFO - Scraping page 7
+2024-10-21 21:30:48,132 - INFO - Scraping page 8
+2024-10-21 21:30:48,428 - INFO - Scraping page 9
+2024-10-21 21:30:48,711 - INFO - Scraping page 10
+2024-10-21 21:30:49,005 - INFO - Scraping page 11
+2024-10-21 21:30:49,292 - INFO - Scraping page 12
+2024-10-21 21:30:49,593 - INFO - Scraping page 13
+2024-10-21 21:30:49,885 - INFO - Scraping page 14
+2024-10-21 21:30:50,270 - INFO - Scraping page 15
+2024-10-21 21:30:50,583 - INFO - Scraping page 16
+2024-10-21 21:30:50,866 - INFO - Scraping page 17
+2024-10-21 21:30:51,186 - INFO - Scraping page 18
+2024-10-21 21:30:51,483 - INFO - Scraping page 19
+2024-10-21 21:30:51,762 - INFO - Scraping page 20
+2024-10-21 21:30:52,077 - INFO - Scraping page 21
+2024-10-21 21:30:52,373 - INFO - Scraping page 22
+2024-10-21 21:30:52,646 - INFO - Scraping page 23
+2024-10-21 21:30:52,906 - INFO - Scraping page 24
+2024-10-21 21:30:53,204 - INFO - Scraping page 25
+2024-10-21 21:30:53,495 - INFO - Scraping page 26
+2024-10-21 21:30:53,735 - INFO - Scraping page 27
+2024-10-21 21:30:54,049 - INFO - Scraping page 28
+2024-10-21 21:30:54,312 - INFO - Scraping page 29
+2024-10-21 21:30:54,635 - INFO - Scraping page 30
+2024-10-21 21:30:54,955 - INFO - Scraping page 31
+2024-10-21 21:30:55,233 - INFO - Scraping page 32
+2024-10-21 21:30:55,921 - INFO - Scraping page 33
+2024-10-21 21:30:56,265 - INFO - Scraping page 34
+2024-10-21 21:30:56,541 - INFO - Scraping page 35
+2024-10-21 21:30:56,923 - INFO - Scraping page 36
+2024-10-21 21:30:57,251 - INFO - Scraping page 37
+2024-10-21 21:30:57,602 - INFO - Scraping page 38
+2024-10-21 21:30:57,895 - INFO - Scraping page 39
+2024-10-21 21:30:58,152 - INFO - Scraping page 40
+2024-10-21 21:30:58,431 - INFO - Scraping page 41
+2024-10-21 21:30:58,717 - INFO - Scraping page 42
+2024-10-21 21:30:59,026 - INFO - Scraping page 43
+2024-10-21 21:30:59,295 - INFO - Scraping page 44
+2024-10-21 21:30:59,593 - INFO - Scraping page 45
+2024-10-21 21:30:59,900 - INFO - Scraping page 46
+2024-10-21 21:31:00,162 - INFO - Scraping page 47
+2024-10-21 21:31:00,449 - INFO - Scraping page 48
+2024-10-21 21:31:00,713 - INFO - Scraping page 49
+2024-10-21 21:31:00,982 - INFO - Scraping page 50
+2024-10-21 21:31:01,243 - INFO - Scraping page 51
+2024-10-21 21:31:01,506 - INFO - Scraping page 52
+2024-10-21 21:31:01,778 - INFO - Scraping page 53
+2024-10-21 21:31:02,042 - INFO - Scraping page 54
+2024-10-21 21:31:02,353 - INFO - Scraping page 55
+2024-10-21 21:31:02,752 - INFO - Scraping page 56
+2024-10-21 21:31:03,063 - INFO - Scraping page 57
+2024-10-21 21:31:03,346 - INFO - Scraping page 58
+2024-10-21 21:31:03,605 - INFO - Scraping page 59
+2024-10-21 21:31:03,886 - INFO - Scraping page 60
+2024-10-21 21:31:04,151 - INFO - Scraping page 61
+2024-10-21 21:31:04,418 - INFO - Scraping page 62
+2024-10-21 21:31:04,801 - INFO - Scraping page 63
+2024-10-21 21:31:05,101 - INFO - Scraping page 64
+2024-10-21 21:31:05,408 - INFO - Scraping page 65
+2024-10-21 21:31:05,668 - INFO - Scraping page 66
+2024-10-21 21:31:05,966 - INFO - Scraping page 67
+2024-10-21 21:31:06,249 - INFO - Scraping page 68
+2024-10-21 21:31:06,498 - INFO - Scraping page 69
+2024-10-21 21:31:06,746 - INFO - Scraping page 70
+2024-10-21 21:31:07,022 - INFO - Scraping page 71
+2024-10-21 21:31:07,320 - INFO - Scraping page 72
+2024-10-21 21:31:07,644 - INFO - Scraping page 73
+2024-10-21 21:31:07,993 - INFO - Scraping page 74
+2024-10-21 21:31:08,236 - INFO - Scraping page 75
+2024-10-21 21:31:08,550 - INFO - Scraping page 76
+2024-10-21 21:31:08,807 - INFO - Scraping page 77
+2024-10-21 21:31:09,106 - INFO - Scraping page 78
+2024-10-21 21:31:09,371 - INFO - Scraping page 79
+2024-10-21 21:31:09,663 - INFO - Scraping page 80
+2024-10-21 21:31:09,967 - INFO - Scraping page 81
+2024-10-21 21:31:10,270 - INFO - Scraping page 82
+2024-10-21 21:31:10,547 - INFO - Scraping page 83
+2024-10-21 21:31:10,815 - INFO - Scraping page 84
+2024-10-21 21:31:11,086 - INFO - Scraping page 85
+2024-10-21 21:31:11,329 - INFO - Scraping page 86
+2024-10-21 21:31:11,696 - INFO - Scraping page 87
+2024-10-21 21:31:11,957 - INFO - Scraping page 88
+2024-10-21 21:31:12,242 - INFO - Scraping page 89
+2024-10-21 21:31:12,556 - INFO - Scraping page 90
+2024-10-21 21:31:12,897 - INFO - Scraping page 91
+2024-10-21 21:31:13,164 - INFO - Scraping page 92
+2024-10-21 21:31:13,500 - INFO - Scraping page 93
+2024-10-21 21:31:13,767 - INFO - Scraping page 94
+2024-10-21 21:31:14,079 - INFO - Scraping page 95
+2024-10-21 21:31:14,453 - INFO - Scraping page 96
+2024-10-21 21:31:14,776 - INFO - Scraping page 97
+2024-10-21 21:31:15,091 - INFO - Scraping page 98
+2024-10-21 21:31:15,400 - INFO - Scraping page 99
+2024-10-21 21:31:15,741 - INFO - Scraping page 100
+2024-10-21 21:31:16,045 - INFO - Scraping completed successfully
+2024-10-21 21:34:24,147 - INFO - Successfully connected to GCP
+2024-10-21 21:34:24,147 - INFO - Scraping page 1
+2024-10-21 21:34:25,422 - INFO - Processing: Investment Data Alliance
+2024-10-21 21:34:26,247 - INFO - Successfully uploaded Investment Data Alliance.jpg
+2024-10-21 21:34:26,247 - INFO - Image uploaded: Investment Data Alliance.jpg
+2024-10-21 21:34:26,474 - INFO - Successfully uploaded Investment Data Alliance_summary.txt
+2024-10-21 21:34:26,474 - INFO - Summary uploaded: Investment Data Alliance_summary.txt
+2024-10-21 21:34:29,245 - INFO - Successfully uploaded Investment Data Alliance.pdf
+2024-10-21 21:34:29,245 - INFO - PDF uploaded: Investment Data Alliance.pdf
+2024-10-21 21:34:31,251 - INFO - No more pages to scrape
+2024-10-21 21:34:31,251 - INFO - Scraping completed successfully
+2024-10-22 10:45:05,725 - INFO - Successfully connected to GCP
+2024-10-22 10:45:05,731 - INFO - Scraping page 1
+2024-10-22 10:45:06,928 - INFO - Processing: Investment Data Alliance
+2024-10-22 10:45:07,560 - INFO - Successfully uploaded Investment Data Alliance.jpg
+2024-10-22 10:45:07,560 - INFO - Image uploaded: Investment Data Alliance.jpg
+2024-10-22 10:45:07,847 - INFO - Successfully uploaded Investment Data Alliance_summary.txt
+2024-10-22 10:45:07,850 - INFO - Summary uploaded: Investment Data Alliance_summary.txt
+2024-10-22 10:45:10,432 - INFO - Successfully uploaded Investment Data Alliance.pdf
+2024-10-22 10:45:10,433 - INFO - PDF uploaded: Investment Data Alliance.pdf
+2024-10-22 10:45:12,436 - INFO - No more pages to scrape
+2024-10-22 10:45:12,440 - INFO - Scraping completed successfully
+2024-10-22 10:47:13,452 - INFO - Successfully connected to GCP
+2024-10-22 10:47:13,452 - INFO - Scraping page 1
+2024-10-22 10:47:14,749 - INFO - Processing: Investment Data Alliance
+2024-10-22 10:47:15,221 - INFO - Successfully uploaded Investment Data Alliance.jpg
+2024-10-22 10:47:15,223 - INFO - Image uploaded: Investment Data Alliance.jpg
+2024-10-22 10:47:15,470 - INFO - Successfully uploaded Investment Data Alliance_summary.txt
+2024-10-22 10:47:15,470 - INFO - Summary uploaded: Investment Data Alliance_summary.txt
+2024-10-22 10:47:17,740 - INFO - Successfully uploaded Investment Data Alliance.pdf
+2024-10-22 10:47:17,740 - INFO - PDF uploaded: Investment Data Alliance.pdf
+2024-10-22 10:47:19,745 - INFO - No more pages to scrape
+2024-10-22 10:47:19,745 - INFO - Scraping completed successfully
+2024-10-22 16:02:29,652 - INFO - Successfully connected to AWS S3
+2024-10-22 16:02:29,652 - INFO - Scraping page 1
+2024-10-22 16:02:30,638 - INFO - Processing: Investment Data Alliance
+2024-10-22 16:02:34,212 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:02:37,215 - ERROR - Failed to upload Investment Data Alliance_summary.txt after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:02:42,261 - ERROR - Failed to upload Investment Data Alliance.pdf after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:02:44,267 - INFO - No more pages to scrape
+2024-10-22 16:02:44,269 - INFO - Scraping completed successfully
+2024-10-22 16:25:19,514 - INFO - Successfully connected to AWS S3
+2024-10-22 16:25:19,514 - INFO - Scraping page 1
+2024-10-22 16:25:20,373 - INFO - Processing: Investment Data Alliance
+2024-10-22 16:25:23,812 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:25:26,815 - ERROR - Failed to upload Investment Data Alliance_summary.txt after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:25:33,185 - ERROR - Failed to upload Investment Data Alliance.pdf after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:25:35,200 - INFO - No more pages to scrape
+2024-10-22 16:25:35,200 - INFO - Scraping completed successfully
+2024-10-22 16:43:59,476 - INFO - Successfully connected to AWS S3
+2024-10-22 16:43:59,477 - INFO - Scraping page 1
+2024-10-22 16:44:00,467 - INFO - Processing: Investment Data Alliance
+2024-10-22 16:44:03,757 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:49:02,668 - INFO - Successfully connected to AWS S3
+2024-10-22 16:49:02,668 - INFO - Scraping page 1
+2024-10-22 16:49:04,054 - INFO - Processing: Investment Data Alliance
+2024-10-22 16:49:07,350 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:49:10,365 - ERROR - Failed to upload Investment Data Alliance_summary.txt after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:49:16,252 - ERROR - Failed to upload Investment Data Alliance.pdf after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:49:18,258 - INFO - No more pages to scrape
+2024-10-22 16:49:18,258 - INFO - Scraping completed successfully
+2024-10-22 16:51:31,735 - INFO - Successfully connected to AWS S3
+2024-10-22 16:51:31,736 - INFO - Scraping page 1
+2024-10-22 16:51:32,748 - INFO - Processing: Investment Data Alliance
+2024-10-22 16:51:36,516 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:51:39,518 - ERROR - Failed to upload Investment Data Alliance_summary.txt after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:51:45,358 - ERROR - Failed to upload Investment Data Alliance.pdf after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 16:51:47,363 - INFO - No more pages to scrape
+2024-10-22 16:51:47,364 - INFO - Scraping completed successfully
+2024-10-22 17:10:19,562 - INFO - Successfully connected to AWS S3
+2024-10-22 17:10:19,566 - INFO - Scraping page 1
+2024-10-22 17:10:21,012 - INFO - Processing: Investment Data Alliance
+2024-10-22 17:10:24,326 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-22 17:10:27,328 - ERROR - Failed to upload Investment Data Alliance_summary.txt after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-24 13:41:38,888 - INFO - Successfully connected to AWS S3
+2024-10-24 13:41:38,888 - INFO - Scraping page 1
+2024-10-24 13:41:39,861 - INFO - Processing: Investment Data Alliance
+2024-10-24 13:41:43,072 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-24 13:41:46,074 - ERROR - Failed to upload Investment Data Alliance_summary.txt after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-24 13:41:51,223 - ERROR - Failed to upload Investment Data Alliance.pdf after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-24 13:41:53,230 - INFO - No more pages to scrape
+2024-10-24 13:41:53,231 - INFO - Scraping completed successfully
+2024-10-24 13:47:27,535 - INFO - Successfully connected to AWS S3
+2024-10-24 13:47:27,535 - INFO - Scraping page 1
+2024-10-24 13:47:28,292 - INFO - Processing: Investment Data Alliance
+2024-10-24 13:47:31,519 - ERROR - Failed to upload Investment Data Alliance.jpg after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-24 13:47:34,521 - ERROR - Failed to upload Investment Data Alliance_summary.txt after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-24 13:47:39,268 - ERROR - Failed to upload Investment Data Alliance.pdf after 3 attempts: expected string or bytes-like object, got 'NoneType'
+2024-10-24 13:47:41,275 - INFO - No more pages to scrape
+2024-10-24 13:47:41,275 - INFO - Scraping completed successfully
+2024-10-24 14:04:20,019 - INFO - Successfully connected to AWS S3
+2024-10-24 14:04:20,019 - INFO - Scraping page 1
+2024-10-24 14:04:20,853 - INFO - Processing: Investment Data Alliance
+2024-10-24 14:04:22,905 - ERROR - Error processing https://rpc.cfainstitute.org/en/research-foundation/investment-data-alliance: expected string or bytes-like object, got 'NoneType'
+2024-10-24 14:04:24,908 - INFO - No more pages to scrape
+2024-10-24 14:04:24,908 - INFO - Scraping completed successfully
+2024-10-24 14:08:26,717 - INFO - Successfully connected to AWS S3
+2024-10-24 14:08:26,717 - INFO - Scraping page 1
+2024-10-24 14:08:27,913 - INFO - Processing: Investment Data Alliance
+2024-10-24 14:08:28,894 - ERROR - Error processing https://rpc.cfainstitute.org/en/research-foundation/investment-data-alliance
+Traceback (most recent call last):
+  File "C:\Users\tanvi\Projects\NEU\BIGDATASYSTEMS\Assignment-3\data-ingestion\data_ingestion.py", line 73, in scrape_publication_page
+    if upload_to_s3(s3, bucket, f"{title}.jpg", image_content, 'image/jpeg'):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\Projects\NEU\BIGDATASYSTEMS\Assignment-3\data-ingestion\data_ingestion.py", line 38, in upload_to_s3
+    s3.put_object(Bucket=bucket, Key=key_name, Body=content, ContentType=content_type)
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\client.py", line 569, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\client.py", line 964, in _make_api_call
+    api_params = self._emit_api_params(
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\client.py", line 1083, in _emit_api_params
+    self.meta.events.emit(
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\hooks.py", line 412, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\hooks.py", line 256, in emit
+    return self._emit(event_name, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\hooks.py", line 239, in _emit
+    response = handler(**kwargs)
+               ^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\handlers.py", line 294, in validate_bucket_name
+    if not VALID_BUCKET.search(bucket) and not VALID_S3_ARN.search(bucket):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: expected string or bytes-like object, got 'NoneType'
+2024-10-24 14:08:30,981 - INFO - No more pages to scrape
+2024-10-24 14:08:30,981 - INFO - Scraping completed successfully
+2024-10-24 14:10:53,452 - ERROR - Error setting up S3 client: 'AWS_ACCESS_KEY_ID'
+2024-10-24 14:10:53,453 - ERROR - Fatal error: 'AWS_ACCESS_KEY_ID'
+2024-10-24 14:11:49,671 - ERROR - Error setting up S3 client: 'AWS_ACCESS_KEY_ID'
+2024-10-24 14:12:31,771 - ERROR - Error setting up S3 client: 'AWS_ACCESS_KEY_ID'
+2024-10-24 14:13:08,744 - INFO - Successfully connected to AWS S3
+2024-10-24 14:13:08,744 - INFO - Scraping page 1
+2024-10-24 14:13:09,559 - INFO - Processing: Investment Data Alliance
+2024-10-24 14:13:10,409 - ERROR - Error processing https://rpc.cfainstitute.org/en/research-foundation/investment-data-alliance
+Traceback (most recent call last):
+  File "C:\Users\tanvi\Projects\NEU\BIGDATASYSTEMS\Assignment-3\data-ingestion\data_ingestion.py", line 70, in scrape_publication_page
+    if upload_to_s3(s3, bucket, f"{title}.jpg", image_content, 'image/jpeg'):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\Projects\NEU\BIGDATASYSTEMS\Assignment-3\data-ingestion\data_ingestion.py", line 35, in upload_to_s3
+    s3.put_object(Bucket=bucket, Key=key_name, Body=content, ContentType=content_type)
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\client.py", line 569, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\client.py", line 1023, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.exceptions.ClientError: An error occurred (AccessDenied) when calling the PutObject operation: User: arn:aws:iam::221082212742:user/bigdata is not authorized to perform: s3:PutObject on resource: "arn:aws:s3:::bigdata3-team4/Investment Data Alliance.jpg" because no identity-based policy allows the s3:PutObject action
+2024-10-24 14:13:12,415 - INFO - No more pages to scrape
+2024-10-24 14:13:12,416 - INFO - Scraping completed successfully
+2024-10-24 14:14:36,621 - INFO - Successfully connected to AWS S3
+2024-10-24 14:14:36,621 - INFO - Scraping page 1
+2024-10-24 14:14:37,267 - INFO - Processing: Investment Data Alliance
+2024-10-24 14:14:38,149 - ERROR - Error processing https://rpc.cfainstitute.org/en/research-foundation/investment-data-alliance
+Traceback (most recent call last):
+  File "C:\Users\tanvi\Projects\NEU\BIGDATASYSTEMS\Assignment-3\data-ingestion\data_ingestion.py", line 70, in scrape_publication_page
+    if upload_to_s3(s3, bucket, f"{title}.jpg", image_content, 'image/jpeg'):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\Projects\NEU\BIGDATASYSTEMS\Assignment-3\data-ingestion\data_ingestion.py", line 35, in upload_to_s3
+    s3.put_object(Bucket=bucket, Key=key_name, Body=content, ContentType=content_type)
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\client.py", line 569, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\tanvi\AppData\Local\Programs\Python\Python312\Lib\site-packages\botocore\client.py", line 1023, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.exceptions.ClientError: An error occurred (AccessDenied) when calling the PutObject operation: User: arn:aws:iam::221082212742:user/bigdata is not authorized to perform: s3:PutObject on resource: "arn:aws:s3:::bigdata3-team4/Investment Data Alliance.jpg" because no identity-based policy allows the s3:PutObject action
+2024-10-24 14:14:40,166 - INFO - No more pages to scrape
+2024-10-24 14:14:40,166 - INFO - Scraping completed successfully
+2024-10-24 14:18:30,488 - INFO - Successfully connected to AWS S3
+2024-10-24 14:18:30,488 - INFO - Scraping page 1
+2024-10-24 14:18:31,317 - INFO - Processing: Investment Data Alliance
+2024-10-24 14:18:33,565 - INFO - Successfully uploaded Investment Data Alliance.jpg
+2024-10-24 14:18:33,634 - INFO - Successfully uploaded Investment Data Alliance_summary.txt
+2024-10-24 14:18:57,420 - INFO - Successfully uploaded Investment Data Alliance.pdf
+2024-10-24 14:18:59,425 - INFO - No more pages to scrape
+2024-10-24 14:18:59,425 - INFO - Scraping completed successfully
