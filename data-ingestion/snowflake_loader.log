@@ -1,0 +1,559 @@
+2024-10-25 01:52:10,815 - INFO - Successfully connected to AWS S3
+2024-10-25 01:52:10,818 - INFO - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.12.1, Platform: Windows-11-10.0.22631-SP0
+2024-10-25 01:52:10,818 - INFO - Connecting to GLOBAL Snowflake domain
+2024-10-25 01:52:10,818 - INFO - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-10-25 01:52:13,193 - INFO - Successfully connected to Snowflake
+2024-10-25 01:52:13,599 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:13,599 - INFO - Connected with role: ACCOUNTADMIN
+2024-10-25 01:52:14,016 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:14,418 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:14,924 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:14,924 - INFO - CFA_PUBLICATIONS table created or verified
+2024-10-25 01:52:16,758 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:17,461 - INFO - Inserted data for publication: A Cash-Flow Focus for Endowments and Trusts
+2024-10-25 01:52:17,904 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:18,769 - INFO - Inserted data for publication: A Comprehensive Guide to Exchange-Traded Funds (ETFs)
+2024-10-25 01:52:18,958 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:19,678 - INFO - Inserted data for publication: A New Look at Currency Investing
+2024-10-25 01:52:20,463 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:21,451 - INFO - Inserted data for publication: A Primer For Investment Trustees: Understanding Investment Committee Responsibilities
+2024-10-25 01:52:22,049 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:22,416 - INFO - Inserted data for publication: African Capital Markets: Challenges and Opportunities
+2024-10-25 01:52:22,954 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:23,304 - INFO - Inserted data for publication: Alternative Investments: A Primer for Investment Professionals
+2024-10-25 01:52:23,687 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:24,348 - INFO - Inserted data for publication: An Introduction to Alternative Credit
+2024-10-25 01:52:24,877 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:25,653 - INFO - Inserted data for publication: Annuities and Retirement Income Planning
+2024-10-25 01:52:25,963 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:26,314 - INFO - Inserted data for publication: Artificial Intelligence in Asset Management
+2024-10-25 01:52:26,549 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:26,935 - INFO - Inserted data for publication: Asian Structured Products
+2024-10-25 01:52:27,210 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:27,563 - INFO - Inserted data for publication: Behavioral Finance: The Second Generation
+2024-10-25 01:52:27,800 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:28,215 - INFO - Inserted data for publication: Beyond Active and Passive Investing: The Customization of Finance
+2024-10-25 01:52:28,435 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:28,757 - INFO - Inserted data for publication: Bursting the Bubble: Rationality in a Seemingly Irrational Market
+2024-10-25 01:52:29,050 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:29,398 - INFO - Inserted data for publication: Capitalism for Everyone
+2024-10-25 01:52:29,614 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:29,943 - INFO - Inserted data for publication: Cryptoassets: The Guide to Bitcoin, Blockchain, and Cryptocurrency for Investment Professionals
+2024-10-25 01:52:30,158 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:30,511 - INFO - Inserted data for publication: Defined Contribution Plans: Challenges and Opportunities for Plan Sponsors
+2024-10-25 01:52:30,755 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:31,090 - INFO - Inserted data for publication: ESG Investment Outcomes, Performance Evaluation, and Attribution
+2024-10-25 01:52:31,282 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:31,691 - INFO - Inserted data for publication: ESG and Responsible Institutional Investing Around the World: A Critical Review
+2024-10-25 01:52:31,875 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:32,339 - INFO - Inserted data for publication: ETFs and Systemic Risks
+2024-10-25 01:52:32,555 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:32,918 - INFO - Inserted data for publication: Environmental Markets: A New Asset Class
+2024-10-25 01:52:33,121 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:33,556 - INFO - Inserted data for publication: Equity Valuation: Science, Art, or Craft?
+2024-10-25 01:52:33,760 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:34,123 - INFO - Inserted data for publication: Errata
+2024-10-25 01:52:34,340 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:34,699 - INFO - Inserted data for publication: Ethics and Financial Markets: The Role of the Analyst
+2024-10-25 01:52:34,903 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:35,291 - INFO - Inserted data for publication: Factor Investing and Asset Allocation
+2024-10-25 01:52:35,485 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:35,825 - INFO - Inserted data for publication: FinTech and RegTech in a Nutshell, and the Future in a Sandbox
+2024-10-25 01:52:36,214 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:36,683 - INFO - Inserted data for publication: Financial Market History: Reflections on the Past for Investors Today
+2024-10-25 01:52:37,249 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:37,600 - INFO - Inserted data for publication: Financial Risk Tolerance: A Psychometric Review
+2024-10-25 01:52:37,868 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:38,235 - INFO - Inserted data for publication: Foundations of High-Yield Analysis
+2024-10-25 01:52:38,429 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:38,774 - INFO - Inserted data for publication: Fundamentals of Futures and Options (corrected April 2014)
+2024-10-25 01:52:38,976 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:39,332 - INFO - Inserted data for publication: Gender Diversity in Investment Management: New Research for Practitioners on How to Close the Gender Gap
+2024-10-25 01:52:39,543 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:40,016 - INFO - Inserted data for publication: Geo-Economics: The Interplay between Geopolitics, Economics, and Investments
+2024-10-25 01:52:40,427 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:40,864 - INFO - Inserted data for publication: Handbook of Artificial Intelligence and Big Data Applications in Investments
+2024-10-25 01:52:41,253 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:41,595 - INFO - Inserted data for publication: Handbook on Sustainable Investments: Background Information and Practical Examples for Institutional Asset Owners
+2024-10-25 01:52:41,845 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:42,189 - INFO - Inserted data for publication: Impact of Reporting Frequency on UK Public Companies
+2024-10-25 01:52:42,390 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:42,731 - INFO - Inserted data for publication: Investment Governance for Fiduciaries
+2024-10-25 01:52:43,030 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:43,382 - INFO - Inserted data for publication: Investment Horizon, Serial Correlation, and Better (Retirement) Portfolios
+2024-10-25 01:52:43,602 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:43,954 - INFO - Inserted data for publication: Investment Luminaries and Their Insights: 25 Years of the Research Foundation Vertin Award
+2024-10-25 01:52:44,143 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:44,534 - INFO - Inserted data for publication: Investment Management: A Science to Teach or an Art to Learn?
+2024-10-25 01:52:44,770 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:45,104 - INFO - Inserted data for publication: Investment Model Validation: A Guide for Practitioners
+2024-10-25 01:52:45,345 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:45,864 - INFO - Inserted data for publication: Investment Professionals and Fiduciary Duties
+2024-10-25 01:52:46,272 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:46,678 - INFO - Inserted data for publication: Investor Risk Profiling: An Overview
+2024-10-25 01:52:47,190 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:47,533 - INFO - Inserted data for publication: Is There a Retirement Crisis? An Exploration of the Current Debate
+2024-10-25 01:52:47,749 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:48,147 - INFO - Inserted data for publication: Islamic Finance: Ethics, Concepts, Practice
+2024-10-25 01:52:48,352 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:48,903 - INFO - Inserted data for publication: Latin American Local Capital Markets
+2024-10-25 01:52:49,110 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:49,679 - INFO - Inserted data for publication: Learning about Risk Management: Insights from Unconventional Risk-Takers
+2024-10-25 01:52:49,878 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:50,427 - INFO - Inserted data for publication: Let�s All Learn How to Fish . . . . to Sustain Long-Term Economic Growth
+2024-10-25 01:52:50,633 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:50,976 - INFO - Inserted data for publication: Life Annuities: An Optimal Product for Retirement Income
+2024-10-25 01:52:51,307 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:51,795 - INFO - Inserted data for publication: Life-Cycle Investing: Financial Education and Consumer Protection (corrected January 2013)
+2024-10-25 01:52:52,232 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:52,745 - INFO - Inserted data for publication: Lifetime Financial Advice: A Personalized Optimal Multilevel Approach
+2024-10-25 01:52:53,113 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:53,473 - INFO - Inserted data for publication: Longevity Risk and Retirement Income Planning
+2024-10-25 01:52:53,671 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:54,017 - INFO - Inserted data for publication: Mainstreaming Sustainable Investing
+2024-10-25 01:52:54,213 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:54,571 - INFO - Inserted data for publication: Manager Selection
+2024-10-25 01:52:54,783 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:55,093 - INFO - Inserted data for publication: Managing Material Risk
+2024-10-25 01:52:55,300 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:55,638 - INFO - Inserted data for publication: Middle East Capital Markets: Challenges and Opportunities
+2024-10-25 01:52:55,841 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:56,204 - INFO - Inserted data for publication: New Vistas in Risk Profiling
+2024-10-25 01:52:56,409 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:56,742 - INFO - Inserted data for publication: Overcoming the Notion of a Single Reference Currency: A Currency Basket Approach
+2024-10-25 01:52:56,941 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:57,281 - INFO - Inserted data for publication: Performance Attribution: History and Progress
+2024-10-25 01:52:57,498 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:57,943 - INFO - Inserted data for publication: Popularity: A Bridge between Classical and Behavioral Finance
+2024-10-25 01:52:58,250 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:58,658 - INFO - Inserted data for publication: Portfolio Structuring and the Value of Forecasting
+2024-10-25 01:52:59,062 - INFO - Number of results in first chunk: 1
+2024-10-25 01:52:59,478 - INFO - Inserted data for publication: Puzzles of Inflation, Money, and Debt: Applying the Fiscal Theory of the Price Level
+2024-10-25 01:52:59,706 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:00,079 - INFO - Inserted data for publication: Relationship Alpha
+2024-10-25 01:53:00,289 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:00,643 - INFO - Inserted data for publication: Research Foundation Review 2015
+2024-10-25 01:53:00,886 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:01,227 - INFO - Inserted data for publication: Research Foundation Review 2016
+2024-10-25 01:53:01,436 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:01,772 - INFO - Inserted data for publication: Research Foundation Review 2017
+2024-10-25 01:53:01,978 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:02,362 - INFO - Inserted data for publication: Research Foundation Review 2018
+2024-10-25 01:53:02,616 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:02,973 - INFO - Inserted data for publication: Research Foundation Review 2019
+2024-10-25 01:53:03,164 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:03,581 - INFO - Inserted data for publication: Research Foundation Year in Review 2012
+2024-10-25 01:53:03,801 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:04,186 - INFO - Inserted data for publication: Research Foundation Year in Review 2013
+2024-10-25 01:53:04,444 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:04,765 - INFO - Inserted data for publication: Research Foundation Year in Review 2014
+2024-10-25 01:53:05,013 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:05,348 - INFO - Inserted data for publication: Revisiting the Equity Risk Premium
+2024-10-25 01:53:05,563 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:05,937 - INFO - Inserted data for publication: Risk Profiling and Tolerance: Insights for the Private Wealth Manager
+2024-10-25 01:53:06,239 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:06,748 - INFO - Inserted data for publication: Risk Profiling through a Behavioral Finance Lens
+2024-10-25 01:53:07,464 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:07,809 - INFO - Inserted data for publication: Risk Tolerance and Circumstances
+2024-10-25 01:53:08,034 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:08,375 - INFO - Inserted data for publication: Robert C. Merton and the Science of Finance: A Collection
+2024-10-25 01:53:08,588 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:08,887 - INFO - Inserted data for publication: Secure Retirement: Connecting Financial Theory and Human Behavior
+2024-10-25 01:53:09,132 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:09,487 - INFO - Inserted data for publication: Some Like It Hedged
+2024-10-25 01:53:09,817 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:10,331 - INFO - Inserted data for publication: Stock Buyback Motivations and Consequences: A Literature Review
+2024-10-25 01:53:10,640 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:11,074 - INFO - Inserted data for publication: Stocks, Bonds, Bills, and Inflation� (SBBI�): 2020 Summary Edition
+2024-10-25 01:53:11,463 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:11,788 - INFO - Inserted data for publication: Stocks, Bonds, Bills, and Inflation� (SBBI�): 2021 Summary Edition
+2024-10-25 01:53:11,971 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:12,334 - INFO - Inserted data for publication: Technical Analysis: Modern Perspectives
+2024-10-25 01:53:12,545 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:12,921 - INFO - Inserted data for publication: Ten Years After: Reflections on the Global Financial Crisis
+2024-10-25 01:53:13,144 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:13,532 - INFO - Inserted data for publication: The Current State of Quantitative Equity Investing
+2024-10-25 01:53:13,915 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:14,327 - INFO - Inserted data for publication: The Economics of Private Equity: A Critical Review
+2024-10-25 01:53:14,736 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:15,150 - INFO - Inserted data for publication: The Emerging Asia Pacific Capital Markets: Challenges and Opportunities
+2024-10-25 01:53:15,554 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:15,932 - INFO - Inserted data for publication: The Equity Risk Premium: A Contextual Literature Review
+2024-10-25 01:53:16,121 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:16,457 - INFO - Inserted data for publication: The Evolution of Asset/Liability Management
+2024-10-25 01:53:16,676 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:17,015 - INFO - Inserted data for publication: The Future of Investment Management
+2024-10-25 01:53:17,220 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:17,581 - INFO - Inserted data for publication: The Incredible Upside-Down Fixed-Income Market
+2024-10-25 01:53:18,003 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:18,524 - INFO - Inserted data for publication: The Industrial Organization of the Global Asset Management Business
+2024-10-25 01:53:18,871 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:19,344 - INFO - Inserted data for publication: The New Economics of Liquidity and Financial Frictions
+2024-10-25 01:53:19,683 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:20,064 - INFO - Inserted data for publication: The Principal�Agent Problem in Finance
+2024-10-25 01:53:20,265 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:20,640 - INFO - Inserted data for publication: The Productivity Puzzle: Restoring Economic Dynamism
+2024-10-25 01:53:20,862 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:21,198 - INFO - Inserted data for publication: The VIX Index and Volatility-Based Global Indexes and Trading Instruments
+2024-10-25 01:53:21,410 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:21,785 - INFO - Inserted data for publication: Tontines: A Practitioner�s Guide to Mortality-Pooled Investments
+2024-10-25 01:53:22,044 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:22,385 - INFO - Inserted data for publication: Trading and Electronic Markets: What Investment Professionals Need to Know
+2024-10-25 01:53:22,626 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:22,958 - INFO - Inserted data for publication: University Endowments: A Primer
+2024-10-25 01:53:23,173 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:23,483 - INFO - Inserted data for publication: Valuation Handbook � International Guide to Cost of Capital: 2021 Summary Edition
+2024-10-25 01:53:23,769 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:24,134 - INFO - Inserted data for publication: Valuation Handbook � International Guide to Cost of Capital: 2022 Summary Edition
+2024-10-25 01:53:24,407 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:24,776 - INFO - Inserted data for publication: Valuation Handbook � International Guide to Cost of Capital: 2023 Summary Edition
+2024-10-25 01:53:25,479 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:26,471 - INFO - Number of results in first chunk: 1
+2024-10-25 01:53:26,471 - INFO - Data loading completed successfully
+2024-10-25 01:53:26,471 - INFO - closed
+2024-10-25 01:53:26,563 - INFO - No async queries seem to be running, deleting session
+2024-10-25 02:25:21,170 - INFO - Environment variables loaded
+2024-10-25 02:25:22,219 - ERROR - Error setting up S3 client: 'S3_BUCKET_NAME'
+2024-10-25 03:09:16,908 - INFO - Environment variables loaded
+2024-10-25 03:09:18,877 - INFO - Successfully set up S3 client for bucket: bigdata3-team4
+2024-10-25 03:09:18,877 - INFO - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.12.1, Platform: Windows-11-10.0.22631-SP0
+2024-10-25 03:09:18,880 - INFO - Connecting to GLOBAL Snowflake domain
+2024-10-25 03:09:18,882 - INFO - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-10-25 03:09:22,259 - INFO - Successfully connected to Snowflake
+2024-10-25 03:09:22,431 - INFO - Number of results in first chunk: 1
+2024-10-25 03:09:22,431 - INFO - Connected with role: ACCOUNTADMIN
+2024-10-25 03:09:22,628 - INFO - Number of results in first chunk: 1
+2024-10-25 03:09:22,938 - INFO - Number of results in first chunk: 1
+2024-10-25 03:09:23,367 - ERROR - Error creating table: 001003 (42000): 01b7ebcd-0102-22c1-0006-b69e00023162: SQL compilation error:
+syntax error line 4 at position 28 unexpected '('.
+2024-10-25 03:09:23,367 - ERROR - Error in load_data_to_snowflake: 001003 (42000): 01b7ebcd-0102-22c1-0006-b69e00023162: SQL compilation error:
+syntax error line 4 at position 28 unexpected '('.
+2024-10-25 03:09:23,477 - INFO - Number of results in first chunk: 1
+2024-10-25 03:09:23,477 - INFO - closed
+2024-10-25 03:09:23,812 - INFO - No async queries seem to be running, deleting session
+2024-10-25 03:09:24,065 - INFO - Snowflake connection closed
+2024-10-25 03:09:24,065 - ERROR - Error in main execution: 001003 (42000): 01b7ebcd-0102-22c1-0006-b69e00023162: SQL compilation error:
+syntax error line 4 at position 28 unexpected '('.
+2024-10-25 03:09:24,065 - INFO - Script execution completed
+2024-10-25 03:12:21,755 - INFO - Environment variables loaded
+2024-10-25 03:12:22,202 - INFO - Successfully set up S3 client for bucket: bigdata3-team4
+2024-10-25 03:12:22,202 - INFO - Snowflake Connector for Python Version: 3.12.3, Python Version: 3.12.1, Platform: Windows-11-10.0.22631-SP0
+2024-10-25 03:12:22,212 - INFO - Connecting to GLOBAL Snowflake domain
+2024-10-25 03:12:22,212 - INFO - This connection is in OCSP Fail Open Mode. TLS Certificates would be checked for validity and revocation status. Any other Certificate Revocation related exceptions or OCSP Responder failures would be disregarded in favor of connectivity.
+2024-10-25 03:12:25,342 - INFO - Successfully connected to Snowflake
+2024-10-25 03:12:25,639 - INFO - Number of results in first chunk: 1
+2024-10-25 03:12:25,649 - INFO - Connected with role: ACCOUNTADMIN
+2024-10-25 03:12:25,835 - INFO - Number of results in first chunk: 1
+2024-10-25 03:12:26,040 - INFO - Number of results in first chunk: 1
+2024-10-25 03:12:26,454 - INFO - Number of results in first chunk: 1
+2024-10-25 03:12:26,454 - INFO - CFA_PUBLICATIONS table created or verified
+2024-10-25 03:12:26,715 - INFO - Starting to process files from bucket: bigdata3-team4
+2024-10-25 03:12:28,196 - INFO - Processing page 1 of S3 bucket
+2024-10-25 03:12:28,206 - INFO - Processing file: A Cash-Flow Focus for Endowments and Trusts/metadata.json
+2024-10-25 03:12:29,196 - INFO - Inserted publication: A Cash-Flow Focus for Endowments and Trusts
+2024-10-25 03:12:29,196 - INFO - Successfully processed file A Cash-Flow Focus for Endowments and Trusts/metadata.json
+2024-10-25 03:12:29,196 - INFO - Processing file: A Comprehensive Guide to Exchange-Traded Funds ETFs/metadata.json
+2024-10-25 03:12:29,934 - INFO - Inserted publication: A Comprehensive Guide to Exchange-Traded Funds (ETFs)
+2024-10-25 03:12:29,934 - INFO - Successfully processed file A Comprehensive Guide to Exchange-Traded Funds ETFs/metadata.json
+2024-10-25 03:12:29,934 - INFO - Processing file: A New Look at Currency Investing/metadata.json
+2024-10-25 03:12:30,692 - INFO - Inserted publication: A New Look at Currency Investing
+2024-10-25 03:12:30,692 - INFO - Successfully processed file A New Look at Currency Investing/metadata.json
+2024-10-25 03:12:30,692 - INFO - Processing file: A Primer For Investment Trustees Understanding Investment Committee Responsibilities/metadata.json
+2024-10-25 03:12:31,416 - INFO - Inserted publication: A Primer For Investment Trustees: Understanding Investment Committee Responsibilities
+2024-10-25 03:12:31,416 - INFO - Successfully processed file A Primer For Investment Trustees Understanding Investment Committee Responsibilities/metadata.json
+2024-10-25 03:12:31,419 - INFO - Processing file: African Capital Markets Challenges and Opportunities/metadata.json
+2024-10-25 03:12:32,135 - INFO - Inserted publication: African Capital Markets: Challenges and Opportunities
+2024-10-25 03:12:32,135 - INFO - Successfully processed file African Capital Markets Challenges and Opportunities/metadata.json
+2024-10-25 03:12:32,135 - INFO - Processing file: Alternative Investments A Primer for Investment Professionals/metadata.json
+2024-10-25 03:12:33,001 - INFO - Inserted publication: Alternative Investments: A Primer for Investment Professionals
+2024-10-25 03:12:33,001 - INFO - Successfully processed file Alternative Investments A Primer for Investment Professionals/metadata.json
+2024-10-25 03:12:33,001 - INFO - Processing file: An Introduction to Alternative Credit/metadata.json
+2024-10-25 03:12:33,714 - INFO - Inserted publication: An Introduction to Alternative Credit
+2024-10-25 03:12:33,714 - INFO - Successfully processed file An Introduction to Alternative Credit/metadata.json
+2024-10-25 03:12:33,714 - INFO - Processing file: Annuities and Retirement Income Planning/metadata.json
+2024-10-25 03:12:34,139 - INFO - Inserted publication: Annuities and Retirement Income Planning
+2024-10-25 03:12:34,139 - INFO - Successfully processed file Annuities and Retirement Income Planning/metadata.json
+2024-10-25 03:12:34,139 - INFO - Processing file: Artificial Intelligence in Asset Management/metadata.json
+2024-10-25 03:12:34,553 - INFO - Inserted publication: Artificial Intelligence in Asset Management
+2024-10-25 03:12:34,554 - INFO - Successfully processed file Artificial Intelligence in Asset Management/metadata.json
+2024-10-25 03:12:34,554 - INFO - Processing file: Asian Structured Products/metadata.json
+2024-10-25 03:12:35,291 - INFO - Inserted publication: Asian Structured Products
+2024-10-25 03:12:35,291 - INFO - Successfully processed file Asian Structured Products/metadata.json
+2024-10-25 03:12:35,295 - INFO - Processing file: Behavioral Finance The Second Generation/metadata.json
+2024-10-25 03:12:35,730 - INFO - Inserted publication: Behavioral Finance: The Second Generation
+2024-10-25 03:12:35,733 - INFO - Successfully processed file Behavioral Finance The Second Generation/metadata.json
+2024-10-25 03:12:35,734 - INFO - Processing file: Beyond Active and Passive Investing The Customization of Finance/metadata.json
+2024-10-25 03:12:36,707 - INFO - Inserted publication: Beyond Active and Passive Investing: The Customization of Finance
+2024-10-25 03:12:36,709 - INFO - Successfully processed file Beyond Active and Passive Investing The Customization of Finance/metadata.json
+2024-10-25 03:12:36,709 - INFO - Processing file: Bursting the Bubble Rationality in a Seemingly Irrational Market/metadata.json
+2024-10-25 03:12:37,496 - INFO - Inserted publication: Bursting the Bubble: Rationality in a Seemingly Irrational Market
+2024-10-25 03:12:37,496 - INFO - Successfully processed file Bursting the Bubble Rationality in a Seemingly Irrational Market/metadata.json
+2024-10-25 03:12:37,496 - INFO - Processing file: Capitalism for Everyone/metadata.json
+2024-10-25 03:12:38,629 - INFO - Inserted publication: Capitalism for Everyone
+2024-10-25 03:12:38,630 - INFO - Successfully processed file Capitalism for Everyone/metadata.json
+2024-10-25 03:12:38,630 - INFO - Processing file: Cryptoassets The Guide to Bitcoin Blockchain and Cryptocurrency for Investment Professionals/metadata.json
+2024-10-25 03:12:39,148 - INFO - Inserted publication: Cryptoassets: The Guide to Bitcoin, Blockchain, and Cryptocurrency for Investment Professionals
+2024-10-25 03:12:39,148 - INFO - Successfully processed file Cryptoassets The Guide to Bitcoin Blockchain and Cryptocurrency for Investment Professionals/metadata.json
+2024-10-25 03:12:39,148 - INFO - Processing file: Defined Contribution Plans Challenges and Opportunities for Plan Sponsors/metadata.json
+2024-10-25 03:12:40,037 - INFO - Inserted publication: Defined Contribution Plans: Challenges and Opportunities for Plan Sponsors
+2024-10-25 03:12:40,037 - INFO - Successfully processed file Defined Contribution Plans Challenges and Opportunities for Plan Sponsors/metadata.json
+2024-10-25 03:12:40,040 - INFO - Processing file: ESG Investment Outcomes Performance Evaluation and Attribution/metadata.json
+2024-10-25 03:12:40,887 - INFO - Inserted publication: ESG Investment Outcomes, Performance Evaluation, and Attribution
+2024-10-25 03:12:40,892 - INFO - Successfully processed file ESG Investment Outcomes Performance Evaluation and Attribution/metadata.json
+2024-10-25 03:12:40,892 - INFO - Processing file: ESG and Responsible Institutional Investing Around the World A Critical Review/metadata.json
+2024-10-25 03:12:41,401 - INFO - Inserted publication: ESG and Responsible Institutional Investing Around the World: A Critical Review
+2024-10-25 03:12:41,401 - INFO - Successfully processed file ESG and Responsible Institutional Investing Around the World A Critical Review/metadata.json
+2024-10-25 03:12:41,401 - INFO - Processing file: ETFs and Systemic Risks/metadata.json
+2024-10-25 03:12:41,959 - INFO - Inserted publication: ETFs and Systemic Risks
+2024-10-25 03:12:41,959 - INFO - Successfully processed file ETFs and Systemic Risks/metadata.json
+2024-10-25 03:12:41,959 - INFO - Processing file: Environmental Markets A New Asset Class/metadata.json
+2024-10-25 03:12:42,695 - INFO - Inserted publication: Environmental Markets: A New Asset Class
+2024-10-25 03:12:42,695 - INFO - Successfully processed file Environmental Markets A New Asset Class/metadata.json
+2024-10-25 03:12:42,695 - INFO - Processing file: Equity Valuation Science Art or Craft/metadata.json
+2024-10-25 03:12:43,294 - INFO - Inserted publication: Equity Valuation: Science, Art, or Craft?
+2024-10-25 03:12:43,294 - INFO - Successfully processed file Equity Valuation Science Art or Craft/metadata.json
+2024-10-25 03:12:43,296 - INFO - Processing file: Errata/metadata.json
+2024-10-25 03:12:43,863 - INFO - Inserted publication: Errata
+2024-10-25 03:12:43,863 - INFO - Successfully processed file Errata/metadata.json
+2024-10-25 03:12:43,863 - INFO - Processing file: Ethics and Financial Markets The Role of the Analyst/metadata.json
+2024-10-25 03:12:44,337 - INFO - Inserted publication: Ethics and Financial Markets: The Role of the Analyst
+2024-10-25 03:12:44,337 - INFO - Successfully processed file Ethics and Financial Markets The Role of the Analyst/metadata.json
+2024-10-25 03:12:44,340 - INFO - Processing file: Factor Investing and Asset Allocation/metadata.json
+2024-10-25 03:12:44,835 - INFO - Inserted publication: Factor Investing and Asset Allocation
+2024-10-25 03:12:44,835 - INFO - Successfully processed file Factor Investing and Asset Allocation/metadata.json
+2024-10-25 03:12:44,835 - INFO - Processing file: FinTech and RegTech in a Nutshell and the Future in a Sandbox/metadata.json
+2024-10-25 03:12:45,298 - INFO - Inserted publication: FinTech and RegTech in a Nutshell, and the Future in a Sandbox
+2024-10-25 03:12:45,298 - INFO - Successfully processed file FinTech and RegTech in a Nutshell and the Future in a Sandbox/metadata.json
+2024-10-25 03:12:45,299 - INFO - Processing file: Financial Market History Reflections on the Past for Investors Today/metadata.json
+2024-10-25 03:12:45,832 - INFO - Inserted publication: Financial Market History: Reflections on the Past for Investors Today
+2024-10-25 03:12:45,832 - INFO - Successfully processed file Financial Market History Reflections on the Past for Investors Today/metadata.json
+2024-10-25 03:12:45,834 - INFO - Processing file: Financial Risk Tolerance A Psychometric Review/metadata.json
+2024-10-25 03:12:46,278 - INFO - Inserted publication: Financial Risk Tolerance: A Psychometric Review
+2024-10-25 03:12:46,281 - INFO - Successfully processed file Financial Risk Tolerance A Psychometric Review/metadata.json
+2024-10-25 03:12:46,310 - INFO - Processing file: Foundations of High-Yield Analysis/metadata.json
+2024-10-25 03:12:46,724 - INFO - Inserted publication: Foundations of High-Yield Analysis
+2024-10-25 03:12:46,724 - INFO - Successfully processed file Foundations of High-Yield Analysis/metadata.json
+2024-10-25 03:12:46,724 - INFO - Processing file: Fundamentals of Futures and Options corrected April 2014/metadata.json
+2024-10-25 03:12:47,152 - INFO - Inserted publication: Fundamentals of Futures and Options (corrected April 2014)
+2024-10-25 03:12:47,152 - INFO - Successfully processed file Fundamentals of Futures and Options corrected April 2014/metadata.json
+2024-10-25 03:12:47,152 - INFO - Processing file: Gender Diversity in Investment Management New Research for Practitioners on How to Close the Gender Gap/metadata.json
+2024-10-25 03:12:47,908 - INFO - Inserted publication: Gender Diversity in Investment Management: New Research for Practitioners on How to Close the Gender Gap
+2024-10-25 03:12:47,909 - INFO - Successfully processed file Gender Diversity in Investment Management New Research for Practitioners on How to Close the Gender Gap/metadata.json
+2024-10-25 03:12:47,909 - INFO - Processing file: Geo-Economics The Interplay between Geopolitics Economics and Investments/metadata.json
+2024-10-25 03:12:48,592 - INFO - Inserted publication: Geo-Economics: The Interplay between Geopolitics, Economics, and Investments
+2024-10-25 03:12:48,592 - INFO - Successfully processed file Geo-Economics The Interplay between Geopolitics Economics and Investments/metadata.json
+2024-10-25 03:12:48,592 - INFO - Processing file: Handbook of Artificial Intelligence and Big Data Applications in Investments/metadata.json
+2024-10-25 03:12:49,450 - INFO - Inserted publication: Handbook of Artificial Intelligence and Big Data Applications in Investments
+2024-10-25 03:12:49,450 - INFO - Successfully processed file Handbook of Artificial Intelligence and Big Data Applications in Investments/metadata.json
+2024-10-25 03:12:49,450 - INFO - Processing file: Handbook on Sustainable Investments Background Information and Practical Examples for Institutional Asset Owners/metadata.json
+2024-10-25 03:12:49,989 - INFO - Inserted publication: Handbook on Sustainable Investments: Background Information and Practical Examples for Institutional Asset Owners
+2024-10-25 03:12:49,989 - INFO - Successfully processed file Handbook on Sustainable Investments Background Information and Practical Examples for Institutional Asset Owners/metadata.json
+2024-10-25 03:12:49,989 - INFO - Processing file: Impact of Reporting Frequency on UK Public Companies/metadata.json
+2024-10-25 03:12:50,502 - INFO - Inserted publication: Impact of Reporting Frequency on UK Public Companies
+2024-10-25 03:12:50,502 - INFO - Successfully processed file Impact of Reporting Frequency on UK Public Companies/metadata.json
+2024-10-25 03:12:50,502 - INFO - Processing file: Investment Governance for Fiduciaries/metadata.json
+2024-10-25 03:12:51,064 - INFO - Inserted publication: Investment Governance for Fiduciaries
+2024-10-25 03:12:51,064 - INFO - Successfully processed file Investment Governance for Fiduciaries/metadata.json
+2024-10-25 03:12:51,064 - INFO - Processing file: Investment Horizon Serial Correlation and Better Retirement Portfolios/metadata.json
+2024-10-25 03:12:51,547 - INFO - Inserted publication: Investment Horizon, Serial Correlation, and Better (Retirement) Portfolios
+2024-10-25 03:12:51,547 - INFO - Successfully processed file Investment Horizon Serial Correlation and Better Retirement Portfolios/metadata.json
+2024-10-25 03:12:51,547 - INFO - Processing file: Investment Luminaries and Their Insights 25 Years of the Research Foundation Vertin Award/metadata.json
+2024-10-25 03:12:52,264 - INFO - Inserted publication: Investment Luminaries and Their Insights: 25 Years of the Research Foundation Vertin Award
+2024-10-25 03:12:52,264 - INFO - Successfully processed file Investment Luminaries and Their Insights 25 Years of the Research Foundation Vertin Award/metadata.json
+2024-10-25 03:12:52,266 - INFO - Processing file: Investment Management A Science to Teach or an Art to Learn/metadata.json
+2024-10-25 03:12:53,076 - INFO - Inserted publication: Investment Management: A Science to Teach or an Art to Learn?
+2024-10-25 03:12:53,076 - INFO - Successfully processed file Investment Management A Science to Teach or an Art to Learn/metadata.json
+2024-10-25 03:12:53,079 - INFO - Processing file: Investment Model Validation A Guide for Practitioners/metadata.json
+2024-10-25 03:12:53,636 - INFO - Inserted publication: Investment Model Validation: A Guide for Practitioners
+2024-10-25 03:12:53,636 - INFO - Successfully processed file Investment Model Validation A Guide for Practitioners/metadata.json
+2024-10-25 03:12:53,636 - INFO - Processing file: Investment Professionals and Fiduciary Duties/metadata.json
+2024-10-25 03:12:54,150 - INFO - Inserted publication: Investment Professionals and Fiduciary Duties
+2024-10-25 03:12:54,152 - INFO - Successfully processed file Investment Professionals and Fiduciary Duties/metadata.json
+2024-10-25 03:12:54,153 - INFO - Processing file: Investor Risk Profiling An Overview/metadata.json
+2024-10-25 03:12:54,611 - INFO - Inserted publication: Investor Risk Profiling: An Overview
+2024-10-25 03:12:54,615 - INFO - Successfully processed file Investor Risk Profiling An Overview/metadata.json
+2024-10-25 03:12:54,615 - INFO - Processing file: Is There a Retirement Crisis An Exploration of the Current Debate/metadata.json
+2024-10-25 03:12:55,007 - INFO - Inserted publication: Is There a Retirement Crisis? An Exploration of the Current Debate
+2024-10-25 03:12:55,008 - INFO - Successfully processed file Is There a Retirement Crisis An Exploration of the Current Debate/metadata.json
+2024-10-25 03:12:55,010 - INFO - Processing file: Islamic Finance Ethics Concepts Practice/metadata.json
+2024-10-25 03:12:55,551 - INFO - Inserted publication: Islamic Finance: Ethics, Concepts, Practice
+2024-10-25 03:12:55,552 - INFO - Successfully processed file Islamic Finance Ethics Concepts Practice/metadata.json
+2024-10-25 03:12:55,552 - INFO - Processing file: Latin American Local Capital Markets/metadata.json
+2024-10-25 03:12:55,968 - INFO - Inserted publication: Latin American Local Capital Markets
+2024-10-25 03:12:55,973 - INFO - Successfully processed file Latin American Local Capital Markets/metadata.json
+2024-10-25 03:12:55,975 - INFO - Processing file: Learning about Risk Management Insights from Unconventional Risk-Takers/metadata.json
+2024-10-25 03:12:56,595 - INFO - Inserted publication: Learning about Risk Management: Insights from Unconventional Risk-Takers
+2024-10-25 03:12:56,595 - INFO - Successfully processed file Learning about Risk Management Insights from Unconventional Risk-Takers/metadata.json
+2024-10-25 03:12:56,595 - INFO - Processing file: Lets All Learn How to Fish     to Sustain Long-Term Economic Growth/metadata.json
+2024-10-25 03:12:57,210 - INFO - Inserted publication: Let’s All Learn How to Fish . . . . to Sustain Long-Term Economic Growth
+2024-10-25 03:12:57,210 - INFO - Successfully processed file Lets All Learn How to Fish     to Sustain Long-Term Economic Growth/metadata.json
+2024-10-25 03:12:57,213 - INFO - Processing file: Life Annuities An Optimal Product for Retirement Income/metadata.json
+2024-10-25 03:12:57,886 - INFO - Inserted publication: Life Annuities: An Optimal Product for Retirement Income
+2024-10-25 03:12:57,889 - INFO - Successfully processed file Life Annuities An Optimal Product for Retirement Income/metadata.json
+2024-10-25 03:12:57,889 - INFO - Processing file: Life-Cycle Investing Financial Education and Consumer Protection corrected January 2013/metadata.json
+2024-10-25 03:12:58,425 - INFO - Inserted publication: Life-Cycle Investing: Financial Education and Consumer Protection (corrected January 2013)
+2024-10-25 03:12:58,425 - INFO - Successfully processed file Life-Cycle Investing Financial Education and Consumer Protection corrected January 2013/metadata.json
+2024-10-25 03:12:58,435 - INFO - Processing file: Lifetime Financial Advice A Personalized Optimal Multilevel Approach/metadata.json
+2024-10-25 03:12:58,849 - INFO - Inserted publication: Lifetime Financial Advice: A Personalized Optimal Multilevel Approach
+2024-10-25 03:12:58,849 - INFO - Successfully processed file Lifetime Financial Advice A Personalized Optimal Multilevel Approach/metadata.json
+2024-10-25 03:12:58,849 - INFO - Processing file: Longevity Risk and Retirement Income Planning/metadata.json
+2024-10-25 03:12:59,287 - INFO - Inserted publication: Longevity Risk and Retirement Income Planning
+2024-10-25 03:12:59,288 - INFO - Successfully processed file Longevity Risk and Retirement Income Planning/metadata.json
+2024-10-25 03:12:59,288 - INFO - Processing file: Mainstreaming Sustainable Investing/metadata.json
+2024-10-25 03:12:59,770 - INFO - Inserted publication: Mainstreaming Sustainable Investing
+2024-10-25 03:12:59,770 - INFO - Successfully processed file Mainstreaming Sustainable Investing/metadata.json
+2024-10-25 03:12:59,770 - INFO - Processing file: Manager Selection/metadata.json
+2024-10-25 03:13:00,333 - INFO - Inserted publication: Manager Selection
+2024-10-25 03:13:00,333 - INFO - Successfully processed file Manager Selection/metadata.json
+2024-10-25 03:13:00,349 - INFO - Processing file: Managing Material Risk/metadata.json
+2024-10-25 03:13:01,063 - INFO - Inserted publication: Managing Material Risk
+2024-10-25 03:13:01,063 - INFO - Successfully processed file Managing Material Risk/metadata.json
+2024-10-25 03:13:01,064 - INFO - Processing file: Middle East Capital Markets Challenges and Opportunities/metadata.json
+2024-10-25 03:13:01,677 - INFO - Inserted publication: Middle East Capital Markets: Challenges and Opportunities
+2024-10-25 03:13:01,679 - INFO - Successfully processed file Middle East Capital Markets Challenges and Opportunities/metadata.json
+2024-10-25 03:13:01,681 - INFO - Processing file: New Vistas in Risk Profiling/metadata.json
+2024-10-25 03:13:02,260 - INFO - Inserted publication: New Vistas in Risk Profiling
+2024-10-25 03:13:02,261 - INFO - Successfully processed file New Vistas in Risk Profiling/metadata.json
+2024-10-25 03:13:02,262 - INFO - Processing file: Overcoming the Notion of a Single Reference Currency A Currency Basket Approach/metadata.json
+2024-10-25 03:13:02,724 - INFO - Inserted publication: Overcoming the Notion of a Single Reference Currency: A Currency Basket Approach
+2024-10-25 03:13:02,727 - INFO - Successfully processed file Overcoming the Notion of a Single Reference Currency A Currency Basket Approach/metadata.json
+2024-10-25 03:13:02,727 - INFO - Processing file: Performance Attribution History and Progress/metadata.json
+2024-10-25 03:13:03,171 - INFO - Inserted publication: Performance Attribution: History and Progress
+2024-10-25 03:13:03,171 - INFO - Successfully processed file Performance Attribution History and Progress/metadata.json
+2024-10-25 03:13:03,171 - INFO - Processing file: Popularity A Bridge between Classical and Behavioral Finance/metadata.json
+2024-10-25 03:13:03,589 - INFO - Inserted publication: Popularity: A Bridge between Classical and Behavioral Finance
+2024-10-25 03:13:03,589 - INFO - Successfully processed file Popularity A Bridge between Classical and Behavioral Finance/metadata.json
+2024-10-25 03:13:03,591 - INFO - Processing file: Portfolio Structuring and the Value of Forecasting/metadata.json
+2024-10-25 03:13:04,236 - INFO - Inserted publication: Portfolio Structuring and the Value of Forecasting
+2024-10-25 03:13:04,236 - INFO - Successfully processed file Portfolio Structuring and the Value of Forecasting/metadata.json
+2024-10-25 03:13:04,236 - INFO - Processing file: Puzzles of Inflation Money and Debt Applying the Fiscal Theory of the Price Level/metadata.json
+2024-10-25 03:13:05,161 - INFO - Inserted publication: Puzzles of Inflation, Money, and Debt: Applying the Fiscal Theory of the Price Level
+2024-10-25 03:13:05,161 - INFO - Successfully processed file Puzzles of Inflation Money and Debt Applying the Fiscal Theory of the Price Level/metadata.json
+2024-10-25 03:13:05,161 - INFO - Processing file: Relationship Alpha/metadata.json
+2024-10-25 03:13:05,875 - INFO - Inserted publication: Relationship Alpha
+2024-10-25 03:13:05,875 - INFO - Successfully processed file Relationship Alpha/metadata.json
+2024-10-25 03:13:05,879 - INFO - Processing file: Research Foundation Review 2015/metadata.json
+2024-10-25 03:13:06,361 - INFO - Inserted publication: Research Foundation Review 2015
+2024-10-25 03:13:06,362 - INFO - Successfully processed file Research Foundation Review 2015/metadata.json
+2024-10-25 03:13:06,362 - INFO - Processing file: Research Foundation Review 2016/metadata.json
+2024-10-25 03:13:06,893 - INFO - Inserted publication: Research Foundation Review 2016
+2024-10-25 03:13:06,900 - INFO - Successfully processed file Research Foundation Review 2016/metadata.json
+2024-10-25 03:13:06,900 - INFO - Processing file: Research Foundation Review 2017/metadata.json
+2024-10-25 03:13:07,316 - INFO - Inserted publication: Research Foundation Review 2017
+2024-10-25 03:13:07,316 - INFO - Successfully processed file Research Foundation Review 2017/metadata.json
+2024-10-25 03:13:07,316 - INFO - Processing file: Research Foundation Review 2018/metadata.json
+2024-10-25 03:13:07,819 - INFO - Inserted publication: Research Foundation Review 2018
+2024-10-25 03:13:07,819 - INFO - Successfully processed file Research Foundation Review 2018/metadata.json
+2024-10-25 03:13:07,819 - INFO - Processing file: Research Foundation Review 2019/metadata.json
+2024-10-25 03:13:08,336 - INFO - Inserted publication: Research Foundation Review 2019
+2024-10-25 03:13:08,346 - INFO - Successfully processed file Research Foundation Review 2019/metadata.json
+2024-10-25 03:13:08,347 - INFO - Processing file: Research Foundation Year in Review 2012/metadata.json
+2024-10-25 03:13:09,251 - INFO - Inserted publication: Research Foundation Year in Review 2012
+2024-10-25 03:13:09,252 - INFO - Successfully processed file Research Foundation Year in Review 2012/metadata.json
+2024-10-25 03:13:09,252 - INFO - Processing file: Research Foundation Year in Review 2013/metadata.json
+2024-10-25 03:13:09,813 - INFO - Inserted publication: Research Foundation Year in Review 2013
+2024-10-25 03:13:09,814 - INFO - Successfully processed file Research Foundation Year in Review 2013/metadata.json
+2024-10-25 03:13:09,815 - INFO - Processing file: Research Foundation Year in Review 2014/metadata.json
+2024-10-25 03:13:10,457 - INFO - Inserted publication: Research Foundation Year in Review 2014
+2024-10-25 03:13:10,457 - INFO - Successfully processed file Research Foundation Year in Review 2014/metadata.json
+2024-10-25 03:13:10,461 - INFO - Processing file: Revisiting the Equity Risk Premium/metadata.json
+2024-10-25 03:13:11,032 - INFO - Inserted publication: Revisiting the Equity Risk Premium
+2024-10-25 03:13:11,032 - INFO - Successfully processed file Revisiting the Equity Risk Premium/metadata.json
+2024-10-25 03:13:11,032 - INFO - Processing file: Risk Profiling and Tolerance Insights for the Private Wealth Manager/metadata.json
+2024-10-25 03:13:11,544 - INFO - Inserted publication: Risk Profiling and Tolerance: Insights for the Private Wealth Manager
+2024-10-25 03:13:11,544 - INFO - Successfully processed file Risk Profiling and Tolerance Insights for the Private Wealth Manager/metadata.json
+2024-10-25 03:13:11,548 - INFO - Processing file: Risk Profiling through a Behavioral Finance Lens/metadata.json
+2024-10-25 03:13:11,964 - INFO - Inserted publication: Risk Profiling through a Behavioral Finance Lens
+2024-10-25 03:13:11,964 - INFO - Successfully processed file Risk Profiling through a Behavioral Finance Lens/metadata.json
+2024-10-25 03:13:11,964 - INFO - Processing file: Risk Tolerance and Circumstances/metadata.json
+2024-10-25 03:13:12,630 - INFO - Inserted publication: Risk Tolerance and Circumstances
+2024-10-25 03:13:12,630 - INFO - Successfully processed file Risk Tolerance and Circumstances/metadata.json
+2024-10-25 03:13:12,635 - INFO - Processing file: Robert C Merton and the Science of Finance A Collection/metadata.json
+2024-10-25 03:13:13,169 - INFO - Inserted publication: Robert C. Merton and the Science of Finance: A Collection
+2024-10-25 03:13:13,169 - INFO - Successfully processed file Robert C Merton and the Science of Finance A Collection/metadata.json
+2024-10-25 03:13:13,171 - INFO - Processing file: Secure Retirement Connecting Financial Theory and Human Behavior/metadata.json
+2024-10-25 03:13:13,761 - INFO - Inserted publication: Secure Retirement: Connecting Financial Theory and Human Behavior
+2024-10-25 03:13:13,761 - INFO - Successfully processed file Secure Retirement Connecting Financial Theory and Human Behavior/metadata.json
+2024-10-25 03:13:13,761 - INFO - Processing file: Some Like It Hedged/metadata.json
+2024-10-25 03:13:14,290 - INFO - Inserted publication: Some Like It Hedged
+2024-10-25 03:13:14,290 - INFO - Successfully processed file Some Like It Hedged/metadata.json
+2024-10-25 03:13:14,290 - INFO - Processing file: Stock Buyback Motivations and Consequences A Literature Review/metadata.json
+2024-10-25 03:13:14,697 - INFO - Inserted publication: Stock Buyback Motivations and Consequences: A Literature Review
+2024-10-25 03:13:14,697 - INFO - Successfully processed file Stock Buyback Motivations and Consequences A Literature Review/metadata.json
+2024-10-25 03:13:14,697 - INFO - Processing file: Stocks Bonds Bills and Inflation SBBI 2020 Summary Edition/metadata.json
+2024-10-25 03:13:15,149 - INFO - Inserted publication: Stocks, Bonds, Bills, and Inflation® (SBBI®): 2020 Summary Edition
+2024-10-25 03:13:15,149 - INFO - Successfully processed file Stocks Bonds Bills and Inflation SBBI 2020 Summary Edition/metadata.json
+2024-10-25 03:13:15,156 - INFO - Processing file: Stocks Bonds Bills and Inflation SBBI 2021 Summary Edition/metadata.json
+2024-10-25 03:13:15,547 - INFO - Inserted publication: Stocks, Bonds, Bills, and Inflation® (SBBI®): 2021 Summary Edition
+2024-10-25 03:13:15,547 - INFO - Successfully processed file Stocks Bonds Bills and Inflation SBBI 2021 Summary Edition/metadata.json
+2024-10-25 03:13:15,547 - INFO - Processing file: Technical Analysis Modern Perspectives/metadata.json
+2024-10-25 03:13:16,077 - INFO - Inserted publication: Technical Analysis: Modern Perspectives
+2024-10-25 03:13:16,079 - INFO - Successfully processed file Technical Analysis Modern Perspectives/metadata.json
+2024-10-25 03:13:16,079 - INFO - Processing file: Ten Years After Reflections on the Global Financial Crisis/metadata.json
+2024-10-25 03:13:16,453 - INFO - Inserted publication: Ten Years After: Reflections on the Global Financial Crisis
+2024-10-25 03:13:16,455 - INFO - Successfully processed file Ten Years After Reflections on the Global Financial Crisis/metadata.json
+2024-10-25 03:13:16,455 - INFO - Processing file: The Current State of Quantitative Equity Investing/metadata.json
+2024-10-25 03:13:16,913 - INFO - Inserted publication: The Current State of Quantitative Equity Investing
+2024-10-25 03:13:16,914 - INFO - Successfully processed file The Current State of Quantitative Equity Investing/metadata.json
+2024-10-25 03:13:16,914 - INFO - Processing file: The Economics of Private Equity A Critical Review/metadata.json
+2024-10-25 03:13:17,448 - INFO - Inserted publication: The Economics of Private Equity: A Critical Review
+2024-10-25 03:13:17,448 - INFO - Successfully processed file The Economics of Private Equity A Critical Review/metadata.json
+2024-10-25 03:13:17,448 - INFO - Processing file: The Emerging Asia Pacific Capital Markets Challenges and Opportunities/metadata.json
+2024-10-25 03:13:17,923 - INFO - Inserted publication: The Emerging Asia Pacific Capital Markets: Challenges and Opportunities
+2024-10-25 03:13:17,923 - INFO - Successfully processed file The Emerging Asia Pacific Capital Markets Challenges and Opportunities/metadata.json
+2024-10-25 03:13:17,923 - INFO - Processing file: The Equity Risk Premium A Contextual Literature Review/metadata.json
+2024-10-25 03:13:18,373 - INFO - Inserted publication: The Equity Risk Premium: A Contextual Literature Review
+2024-10-25 03:13:18,373 - INFO - Successfully processed file The Equity Risk Premium A Contextual Literature Review/metadata.json
+2024-10-25 03:13:18,373 - INFO - Processing file: The Evolution of AssetLiability Management/metadata.json
+2024-10-25 03:13:18,789 - INFO - Inserted publication: The Evolution of Asset/Liability Management
+2024-10-25 03:13:18,789 - INFO - Successfully processed file The Evolution of AssetLiability Management/metadata.json
+2024-10-25 03:13:18,789 - INFO - Processing file: The Future of Investment Management/metadata.json
+2024-10-25 03:13:19,291 - INFO - Inserted publication: The Future of Investment Management
+2024-10-25 03:13:19,292 - INFO - Successfully processed file The Future of Investment Management/metadata.json
+2024-10-25 03:13:19,293 - INFO - Processing file: The Incredible Upside-Down Fixed-Income Market/metadata.json
+2024-10-25 03:13:19,687 - INFO - Inserted publication: The Incredible Upside-Down Fixed-Income Market
+2024-10-25 03:13:19,687 - INFO - Successfully processed file The Incredible Upside-Down Fixed-Income Market/metadata.json
+2024-10-25 03:13:19,687 - INFO - Processing file: The Industrial Organization of the Global Asset Management Business/metadata.json
+2024-10-25 03:13:20,225 - INFO - Inserted publication: The Industrial Organization of the Global Asset Management Business
+2024-10-25 03:13:20,225 - INFO - Successfully processed file The Industrial Organization of the Global Asset Management Business/metadata.json
+2024-10-25 03:13:20,225 - INFO - Processing file: The New Economics of Liquidity and Financial Frictions/metadata.json
+2024-10-25 03:13:20,830 - INFO - Inserted publication: The New Economics of Liquidity and Financial Frictions
+2024-10-25 03:13:20,830 - INFO - Successfully processed file The New Economics of Liquidity and Financial Frictions/metadata.json
+2024-10-25 03:13:20,830 - INFO - Processing file: The PrincipalAgent Problem in Finance/metadata.json
+2024-10-25 03:13:21,438 - INFO - Inserted publication: The Principal–Agent Problem in Finance
+2024-10-25 03:13:21,443 - INFO - Successfully processed file The PrincipalAgent Problem in Finance/metadata.json
+2024-10-25 03:13:21,444 - INFO - Processing file: The Productivity Puzzle Restoring Economic Dynamism/metadata.json
+2024-10-25 03:13:22,023 - INFO - Inserted publication: The Productivity Puzzle: Restoring Economic Dynamism
+2024-10-25 03:13:22,024 - INFO - Successfully processed file The Productivity Puzzle Restoring Economic Dynamism/metadata.json
+2024-10-25 03:13:22,026 - INFO - Processing file: The VIX Index and Volatility-Based Global Indexes and Trading Instruments/metadata.json
+2024-10-25 03:13:22,428 - INFO - Inserted publication: The VIX Index and Volatility-Based Global Indexes and Trading Instruments
+2024-10-25 03:13:22,428 - INFO - Successfully processed file The VIX Index and Volatility-Based Global Indexes and Trading Instruments/metadata.json
+2024-10-25 03:13:22,433 - INFO - Processing file: Tontines A Practitioners Guide to Mortality-Pooled Investments/metadata.json
+2024-10-25 03:13:22,879 - INFO - Inserted publication: Tontines: A Practitioner’s Guide to Mortality-Pooled Investments
+2024-10-25 03:13:22,882 - INFO - Successfully processed file Tontines A Practitioners Guide to Mortality-Pooled Investments/metadata.json
+2024-10-25 03:13:22,882 - INFO - Processing file: Trading and Electronic Markets What Investment Professionals Need to Know/metadata.json
+2024-10-25 03:13:23,430 - INFO - Inserted publication: Trading and Electronic Markets: What Investment Professionals Need to Know
+2024-10-25 03:13:23,432 - INFO - Successfully processed file Trading and Electronic Markets What Investment Professionals Need to Know/metadata.json
+2024-10-25 03:13:23,432 - INFO - Processing file: University Endowments A Primer/metadata.json
+2024-10-25 03:13:23,848 - INFO - Inserted publication: University Endowments: A Primer
+2024-10-25 03:13:23,849 - INFO - Successfully processed file University Endowments A Primer/metadata.json
+2024-10-25 03:13:23,849 - INFO - Processing file: Valuation Handbook  International Guide to Cost of Capital 2021 Summary Edition/metadata.json
+2024-10-25 03:13:24,267 - INFO - Inserted publication: Valuation Handbook — International Guide to Cost of Capital: 2021 Summary Edition
+2024-10-25 03:13:24,267 - INFO - Successfully processed file Valuation Handbook  International Guide to Cost of Capital 2021 Summary Edition/metadata.json
+2024-10-25 03:13:24,267 - INFO - Processing file: Valuation Handbook  International Guide to Cost of Capital 2022 Summary Edition/metadata.json
+2024-10-25 03:13:24,684 - INFO - Inserted publication: Valuation Handbook — International Guide to Cost of Capital: 2022 Summary Edition
+2024-10-25 03:13:24,688 - INFO - Successfully processed file Valuation Handbook  International Guide to Cost of Capital 2022 Summary Edition/metadata.json
+2024-10-25 03:13:24,688 - INFO - Processing file: Valuation Handbook  International Guide to Cost of Capital 2023 Summary Edition/metadata.json
+2024-10-25 03:13:25,119 - INFO - Inserted publication: Valuation Handbook — International Guide to Cost of Capital: 2023 Summary Edition
+2024-10-25 03:13:25,119 - INFO - Successfully processed file Valuation Handbook  International Guide to Cost of Capital 2023 Summary Edition/metadata.json
+2024-10-25 03:13:25,119 - INFO - Processing file: 投资管理人的选择/metadata.json
+2024-10-25 03:13:26,461 - INFO - Inserted publication: 投资管理人的选择
+2024-10-25 03:13:26,461 - INFO - Successfully processed file 投资管理人的选择/metadata.json
+2024-10-25 03:13:26,461 - INFO - Completed page 1. Processed 100 metadata files on this page.
+2024-10-25 03:13:26,461 - INFO - Total files processed so far: 100
+2024-10-25 03:13:26,655 - INFO - Number of results in first chunk: 1
+2024-10-25 03:13:26,659 - INFO - Data loading completed successfully. Total files processed: 100
+2024-10-25 03:13:26,661 - INFO - closed
+2024-10-25 03:13:26,766 - INFO - No async queries seem to be running, deleting session
+2024-10-25 03:13:27,068 - INFO - Snowflake connection closed
+2024-10-25 03:13:27,068 - INFO - Script execution completed
