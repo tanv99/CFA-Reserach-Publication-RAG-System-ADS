@@ -1,8 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends, Header, Query
+from fastapi.responses import StreamingResponse, JSONResponse
+import boto3
+import json
+from botocore.exceptions import ClientError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, constr, validator
-from typing import Optional, List
-import os
+from typing import List, Dict, Optional
+import io
 from dotenv import load_dotenv
 import jwt
 from datetime import datetime, timedelta
@@ -237,3 +241,121 @@ async def test_db_connection():
         raise HTTPException(status_code=500, detail=f"Database connection test failed: {str(e)}")
     finally:
         connection.close()
+
+
+###########################AWS  streamlit show documents ############
+class PDFMetadata(BaseModel):
+    title: str
+    metadata: Dict
+    summary: Optional[str]
+
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
+AWS_REGION = os.getenv("AWS_REGION")
+BUCKET_NAME = os.getenv("BUCKET_NAME")
+
+def get_s3_client():
+    """Create and return an S3 client"""
+    return boto3.client(
+        's3',
+        aws_access_key_id=AWS_ACCESS_KEY,
+        aws_secret_access_key=AWS_SECRET_KEY,
+        region_name=AWS_REGION
+    )
+
+@app.get("/pdfs/all", response_model=List[PDFMetadata])
+async def get_all_pdfs():
+    """Get all PDFs with their metadata and cover image URLs"""
+    try:
+        s3_client = get_s3_client()
+        folders = set()
+        
+        # List all objects in the bucket
+        paginator = s3_client.get_paginator('list_objects_v2')
+        for page in paginator.paginate(Bucket=BUCKET_NAME):
+            if 'Contents' in page:
+                for obj in page['Contents']:
+                    parts = obj['Key'].split('/')
+                    if len(parts) > 1:
+                        folders.add(parts[0])
+        
+        # Get metadata and cover URLs for each PDF
+        pdfs = []
+        for folder in sorted(folders):
+            try:
+                # Get metadata
+                metadata_key = f"{folder}/metadata.json"
+                metadata_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=metadata_key)
+                metadata = json.loads(metadata_obj['Body'].read().decode('utf-8'))
+            except ClientError:
+                metadata = {}
+            
+            try:
+                # Get summary
+                summary_key = f"{folder}/summary.txt"
+                summary_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=summary_key)
+                summary = summary_obj['Body'].read().decode('utf-8')
+            except ClientError:
+                summary = "No summary available"
+            
+            # Create cover image URL
+            cover_url = f"/pdfs/{folder}/cover"
+            
+            pdfs.append(PDFMetadata(
+                title=folder,
+                metadata=metadata,
+                summary=summary,
+                cover_url=cover_url
+            ))
+        
+        return pdfs
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/pdfs/{folder_name}/document")
+async def get_pdf_document(folder_name: str):
+    """Stream the PDF document"""
+    try:
+        s3_client = get_s3_client()
+        pdf_key = f"{folder_name}/document.pdf"
+        
+        try:
+            pdf_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=pdf_key)
+            pdf_content = pdf_obj['Body'].read()
+            
+            return StreamingResponse(
+                io.BytesIO(pdf_content),
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f'inline; filename="{folder_name}.pdf"'
+                }
+            )
+        except ClientError:
+            raise HTTPException(status_code=404, detail="PDF not found")
+            
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/pdfs/{folder_name}/cover")
+async def get_cover_image(folder_name: str):
+    """Stream the cover image"""
+    try:
+        s3_client = get_s3_client()
+        image_key = f"{folder_name}/image.jpg"
+        
+        try:
+            image_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=image_key)
+            image_content = image_obj['Body'].read()
+            
+            return StreamingResponse(
+                io.BytesIO(image_content),
+                media_type="image/jpeg",
+                headers={
+                    "Content-Disposition": f'inline; filename="{folder_name}_cover.jpg"'
+                }
+            )
+        except ClientError:
+            raise HTTPException(status_code=404, detail="Cover image not found")
+            
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=str(e))
