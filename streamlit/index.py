@@ -5,6 +5,7 @@ import os
 import pathlib
 import page1
 import page2
+import page3
 
 st.set_page_config(
     page_title="My Streamlit App",
@@ -98,11 +99,14 @@ def show_navigation():
         if st.sidebar.button("Dashboard", key="nav_home", use_container_width=True):
             selected_page = "Home"
             
-        if st.sidebar.button("PDF Selection", key="nav_page1", use_container_width=True):
-            selected_page = "PDF Selection"
+        if st.sidebar.button("Page One", key="nav_page1", use_container_width=True):
+            selected_page = "Page One"
             
-        if st.sidebar.button("Summary", key="nav_page2", use_container_width=True):
-            selected_page = "Summary"
+        if st.sidebar.button("Page Two", key="nav_page2", use_container_width=True):
+            selected_page = "Page Two"
+            
+        if st.sidebar.button("Page Three", key="nav_page3", use_container_width=True):
+            selected_page = "Page Three"
         
         # Add a separator before logout
         st.markdown("<hr>", unsafe_allow_html=True)
@@ -252,10 +256,12 @@ def main():
             if selected_page == "Home":
                 st.markdown("<h1 style='text-align: center;'>Welcome to Dashboard</h1>", unsafe_allow_html=True)
                 st.markdown("<p style='text-align: center;'>Select a page from the sidebar to get started.</p>", unsafe_allow_html=True)
-            elif selected_page == "PDF Selection":
+            elif selected_page == "Page One":
                 page1.show()
-            elif selected_page == "Summary":
+            elif selected_page == "Page Two":
                 page2.show()
+            elif selected_page == "Page Three":
+                page3.show()
 
 if __name__ == "__main__":
     main()
