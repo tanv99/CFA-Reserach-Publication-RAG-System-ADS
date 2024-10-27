@@ -28,7 +28,7 @@ class AWSConfig:
     bucket: str
 
 class SnowflakeLoader:
-    def __init__(self, snowflake_config: SnowflakeConfig, aws_config: AWSConfig):
+    def _init_(self, snowflake_config: SnowflakeConfig, aws_config: AWSConfig):
         self.snowflake_config = snowflake_config
         self.aws_config = aws_config
         self.logger = self._setup_logging()
@@ -102,11 +102,13 @@ class SnowflakeLoader:
         """Create the publications table if it doesn't exist."""
         with conn.cursor() as cursor:
             try:
-                # First, ensure we're using the correct database and schema
-                cursor.execute(f"USE DATABASE {self.snowflake_config.database}")
-                cursor.execute(f"USE SCHEMA {self.snowflake_config.schema}")
+                # Drop existing table if it exists
+                drop_table_sql = f"""
+                DROP TABLE IF EXISTS {self.snowflake_config.database}.{self.snowflake_config.schema}.CFA_PUBLICATIONS
+                """
+                cursor.execute(drop_table_sql)
                 
-                # Create table with explicit schema reference
+                # Create new table with all required columns
                 create_table_sql = f"""
                 CREATE TABLE IF NOT EXISTS {self.snowflake_config.database}.{self.snowflake_config.schema}.CFA_PUBLICATIONS (
                     ID NUMBER AUTOINCREMENT,
@@ -114,6 +116,7 @@ class SnowflakeLoader:
                     SUMMARY TEXT,
                     IMAGE_URL VARCHAR(1000),
                     PDF_URL VARCHAR(1000),
+                    URL VARCHAR(1000),
                     S3_BUCKET VARCHAR(100),
                     CREATED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
                     UPDATED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
@@ -122,7 +125,7 @@ class SnowflakeLoader:
                 """
                 cursor.execute(create_table_sql)
                 
-                # Important: Commit the table creation
+                # Commit the changes
                 conn.commit()
                 
                 # Verify table exists
@@ -145,20 +148,43 @@ class SnowflakeLoader:
 
     @staticmethod
     def process_metadata(metadata: Dict[str, Any], bucket: str) -> Dict[str, Any]:
-        """Process metadata and validate required fields."""
-        required_fields = ['title', 'summary', 'image_url', 'pdf_url']
-        missing_fields = [field for field in required_fields if not metadata.get(field)]
+        """
+        Process metadata and construct required fields from available data.
         
-        if missing_fields:
-            raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
+        Args:
+            metadata (Dict[str, Any]): Raw metadata from JSON file
+            bucket (str): S3 bucket name
+        
+        Returns:
+            Dict[str, Any]: Processed metadata with required fields
+        """
+        try:
+            # Extract folder name from the URL
+            folder_name = metadata['url'].split('/')[-1]
             
-        return {
-            'TITLE': metadata['title'],
-            'SUMMARY': metadata['summary'],
-            'IMAGE_URL': metadata['image_url'],
-            'PDF_URL': metadata['pdf_url'],
-            'S3_BUCKET': bucket
-        }
+            # Construct the URLs based on flags and folder path
+            image_url = f"https://{bucket}.s3.amazonaws.com/{folder_name}/cover.jpg" if metadata.get('has_image') else ''
+            pdf_url = f"https://{bucket}.s3.amazonaws.com/{folder_name}/full-text.pdf" if metadata.get('has_pdf') else ''
+            
+            # Get or generate summary
+            summary = "Summary will be updated" if metadata.get('has_summary') else "Summary not available"
+            
+            # Construct the processed metadata
+            processed_metadata = {
+                'TITLE': metadata.get('title', 'Unknown Title'),
+                'SUMMARY': summary,
+                'IMAGE_URL': image_url,
+                'PDF_URL': pdf_url,
+                'URL': metadata.get('url', ''),
+                'S3_BUCKET': bucket
+            }
+            
+            return processed_metadata
+            
+        except KeyError as e:
+            raise ValueError(f"Required metadata field missing: {e}")
+        except Exception as e:
+            raise ValueError(f"Error processing metadata: {e}")
 
     def insert_publication_data(self, conn: snowflake.connector.SnowflakeConnection, 
                               publication_data: Dict[str, Any]) -> None:
@@ -168,9 +194,9 @@ class SnowflakeLoader:
                 # Use fully qualified table name
                 insert_sql = f"""
                 INSERT INTO {self.snowflake_config.database}.{self.snowflake_config.schema}.CFA_PUBLICATIONS (
-                    TITLE, SUMMARY, IMAGE_URL, PDF_URL, S3_BUCKET
+                    TITLE, SUMMARY, IMAGE_URL, PDF_URL, URL, S3_BUCKET
                 ) VALUES (
-                    %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s
                 )
                 """
                 cursor.execute(insert_sql, (
@@ -178,6 +204,7 @@ class SnowflakeLoader:
                     publication_data['SUMMARY'],
                     publication_data['IMAGE_URL'],
                     publication_data['PDF_URL'],
+                    publication_data['URL'],
                     publication_data['S3_BUCKET']
                 ))
                 self.logger.info(f"Inserted publication: {publication_data['TITLE']}")
@@ -188,8 +215,7 @@ class SnowflakeLoader:
     def load_data(self) -> None:
         """Main data loading process with improved error handling and batching."""
         s3_client = self.setup_s3_client()
-        batch_size = 100
-        current_batch = []
+        successful_count = 0
 
         with self.snowflake_connection() as conn:
             self.create_publications_table(conn)
@@ -214,11 +240,11 @@ class SnowflakeLoader:
                                 metadata, 
                                 self.aws_config.bucket
                             )
-                            current_batch.append(publication_data)
                             
-                            if len(current_batch) >= batch_size:
-                                self._process_batch(conn, current_batch)
-                                current_batch = []
+                            # Insert individual record
+                            self.insert_publication_data(conn, publication_data)
+                            conn.commit()
+                            successful_count += 1
                                 
                             total_processed += 1
                             
@@ -232,29 +258,12 @@ class SnowflakeLoader:
                             self.logger.error(f"Unexpected error processing {obj['Key']}: {e}")
                             continue
                 
-                # Process any remaining items in the final batch
-                if current_batch:
-                    self._process_batch(conn, current_batch)
-                
-                self.logger.info(f"Data loading completed. Total files processed: {total_processed}")
+                self.logger.info(f"Data loading completed. Successfully processed: {successful_count} out of {total_processed} files")
                 
             except Exception as e:
                 self.logger.error(f"Error in load_data: {e}")
                 conn.rollback()
                 raise
-
-    def _process_batch(self, conn: snowflake.connector.SnowflakeConnection, 
-                      batch: list[Dict[str, Any]]) -> None:
-        """Process a batch of publications."""
-        try:
-            for publication_data in batch:
-                self.insert_publication_data(conn, publication_data)
-            conn.commit()
-            self.logger.info(f"Successfully processed batch of {len(batch)} items")
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"Error processing batch: {e}")
-            raise
 
 def main():
     """Main execution function with configuration management."""
@@ -292,5 +301,5 @@ def main():
         logging.error(f"Fatal error in main execution: {e}")
         sys.exit(1)
 
-if __name__ == "__main__":
+if __name__ == "_main_":
     main()
