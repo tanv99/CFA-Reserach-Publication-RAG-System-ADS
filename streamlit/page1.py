@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 import os
 import math
 from typing import List
-import page2
 
 # Load environment variables
 load_dotenv()

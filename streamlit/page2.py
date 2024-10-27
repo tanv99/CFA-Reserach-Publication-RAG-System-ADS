@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 from dotenv import load_dotenv
 import os
+import json
 
 # Load environment variables
 load_dotenv()
@@ -35,13 +36,27 @@ def load_css():
                 justify-content: center;
                 margin: 1rem 0;
             }
+
+            .key-point {
+                padding: 0.5rem 0;
+                margin: 0.25rem 0;
+            }
+
+            .main-topic {
+                padding: 0.5rem 0;
+                margin: 0.25rem 0;
+            }
+
+            .summary-text {
+                line-height: 1.6;
+                margin: 1rem 0;
+            }
         </style>
     """, unsafe_allow_html=True)
 
 def show():
     load_css()
     
-    # Get the PDF title from session state
     pdf_title = st.session_state.get('pdf_for_summary')
     
     if not pdf_title:
@@ -49,7 +64,6 @@ def show():
         return
     
     try:
-        # Display the summary page content
         st.markdown(f"<h1 class='summary-title'>Summary: {pdf_title}</h1>", unsafe_allow_html=True)
         
         # Navigation buttons at the top
@@ -66,25 +80,62 @@ def show():
             
             # Add a loading spinner while generating summary
             with st.spinner("Generating summary..."):
-                # Make API call to get summary
                 try:
-                    response = requests.get(f"{FASTAPI_URL}/pdfs/{pdf_title}/summary")
+                    response = requests.get(
+                        f"{FASTAPI_URL}/pdfs/{pdf_title}/process",
+                        timeout=120  # Increased timeout
+                    )
+                    
                     if response.status_code == 200:
-                        summary_data = response.json()
+                        result = response.json()
                         
-                        # Display summary sections
-                        st.subheader("Key Points")
-                        st.write(summary_data.get("key_points", "No key points available"))
+                        # Display extracted text in expandable section
+                        with st.expander("📄 View Extracted Text"):
+                            st.text(result['extracted_text'])
                         
-                        st.subheader("Main Topics")
-                        st.write(summary_data.get("main_topics", "No main topics available"))
+                        # Display summary
+                        st.subheader("📋 Document Summary")
+                        summary_data = result['summary']
                         
-                        st.subheader("Detailed Summary")
-                        st.write(summary_data.get("detailed_summary", "No detailed summary available"))
+                        # Display Key Points
+                        if summary_data.get('key_points'):
+                            st.subheader("Key Points")
+                            for point in summary_data['key_points']:
+                                st.markdown(f"• {point}")
+                        
+                        # Display Main Topics
+                        if summary_data.get('main_topics'):
+                            st.subheader("Main Topics")
+                            for topic in summary_data['main_topics']:
+                                st.markdown(f"• {topic}")
+                        
+                        # Display Summary
+                        if summary_data.get('summary'):
+                            st.subheader("Detailed Summary")
+                            st.write(summary_data['summary'])
+                        
+                        # Check if we have any content
+                        if not any([
+                            summary_data.get('key_points'),
+                            summary_data.get('main_topics'),
+                            summary_data.get('summary')
+                        ]):
+                            st.warning("No summary content was generated. The model might need adjustments.")
+                            
+                            # Display raw response for debugging
+                            with st.expander("Show Raw Response"):
+                                st.json(result)
                     else:
-                        st.error("Failed to load summary. Please try again.")
+                        st.error(f"Failed to generate summary. Status code: {response.status_code}")
+                        with st.expander("Show Error Details"):
+                            st.json(response.json())
+                            
+                except requests.exceptions.Timeout:
+                    st.error("Request timed out. The summary generation is taking longer than expected. Please try again.")
+                except requests.exceptions.RequestException as e:
+                    st.error(f"Error connecting to server: {str(e)}")
                 except Exception as e:
-                    st.error("Error connecting to server")
+                    st.error(f"Unexpected error: {str(e)}")
             
             st.markdown("</div>", unsafe_allow_html=True)
         
@@ -95,7 +146,7 @@ def show():
                 st.rerun()
                     
     except Exception as e:
-        st.error("An error occurred while loading the summary page")
+        st.error(f"An error occurred: {str(e)}")
         if st.button("← Back to PDF Selection"):
             st.session_state['current_page'] = "PDF Selection"
             st.rerun()

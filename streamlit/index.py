@@ -108,6 +108,9 @@ def show_navigation():
         if st.sidebar.button("Page Three", key="nav_page3", use_container_width=True):
             selected_page = "Page Three"
         
+        if st.sidebar.button("Page Three", key="nav_page3", use_container_width=True):
+            selected_page = "Page Three"
+
         # Add a separator before logout
         st.markdown("<hr>", unsafe_allow_html=True)
         
