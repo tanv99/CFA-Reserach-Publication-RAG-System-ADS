@@ -5,6 +5,7 @@ import os
 import pathlib
 import page1
 import page2
+import page3
 
 st.set_page_config(
     page_title="My Streamlit App",
@@ -104,6 +105,9 @@ def show_navigation():
         if st.sidebar.button("Summary", key="nav_page2", use_container_width=True):
             selected_page = "Summary"
         
+        if st.sidebar.button("Page Three", key="nav_page3", use_container_width=True):
+            selected_page = "Page Three"
+
         # Add a separator before logout
         st.markdown("<hr>", unsafe_allow_html=True)
         
@@ -256,6 +260,8 @@ def main():
                 page1.show()
             elif selected_page == "Summary":
                 page2.show()
+            elif selected_page == "Page Three":
+                page3.show()
 
 if __name__ == "__main__":
     main()

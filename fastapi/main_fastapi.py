@@ -18,6 +18,10 @@ from google.oauth2 import service_account
 import openai
 import os, pathlib
 from pathlib import Path
+from pdf_processor import PDFProcessor
+import requests
+from openai import OpenAI 
+from typing import Any
 
 
 # Load environment variables
@@ -31,6 +35,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+pdf_processor = PDFProcessor()
 
 # JWT settings
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -359,3 +365,132 @@ async def get_cover_image(folder_name: str):
             
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+#################################################generte summay################
+# NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+# NVIDIA_API_URL = os.getenv("NVIDIA_API_URL")
+# Initialize OpenAI client with NVIDIA endpoint
+client = OpenAI(
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key=os.getenv('NVIDIA_API_KEY')
+)
+
+@app.get("/pdfs/{folder_name}/process")
+async def process_pdf_content(folder_name: str):
+    try:
+        # Get PDF from S3
+        s3_client = get_s3_client()
+        try:
+            response = s3_client.get_object(
+                Bucket=os.getenv("BUCKET_NAME"),
+                Key=f"{folder_name}/document.pdf"
+            )
+            pdf_content = response['Body'].read()
+        except Exception as e:
+            logger.error(f"Error reading PDF from S3: {str(e)}")
+            raise HTTPException(status_code=404, detail="PDF not found")
+        
+        # Process PDF and get extracted text
+        extracted_text = pdf_processor.process_pdf(pdf_content)
+        
+        # Prepare prompt for summary
+        prompt = f"""Please analyze this document and provide a structured summary following this exact format:
+
+Document text:
+{extracted_text}
+
+Please structure your response exactly as follows:
+
+Key Points:
+- [First key point]
+- [Second key point]
+- [Third key point]
+(provide 3-5 key points)
+
+Main Topics:
+- [First main topic]
+- [Second main topic]
+- [Third main topic]
+(provide 2-3 main topics)
+
+Summary:
+[Provide a 2-3 paragraph summary here]
+
+Important: Please maintain this exact structure and format in your response, including the headers 'Key Points:', 'Main Topics:', and 'Summary:'."""
+
+        try:
+            # Generate summary using NVIDIA's Llama 2
+            completion = client.chat.completions.create(
+                model="nvidia/llama-3.1-nemotron-70b-instruct",  # Using standard Llama 2 model
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=1000
+            )
+            
+            summary_text = completion.choices[0].message.content
+            
+            # Process the response into structured format
+            sections = summary_text.split('\n\n')
+            key_points = []
+            main_topics = []
+            detailed_summary = ""
+            
+            for section in sections:
+                section = section.strip()
+                if "Key points" in section.lower():
+                    points = [p.strip('- ').strip() for p in section.split('\n')[1:]]
+                    key_points = [p for p in points if p]
+                elif "Main topics" in section.lower():
+                    topics = [t.strip('- ').strip() for t in section.split('\n')[1:]]
+                    main_topics = [t for t in topics if t]
+                elif any(x in section.lower() for x in ["summary", "overview"]):
+                    detailed_summary = section.split(':', 1)[-1].strip()
+            
+            structured_summary = {
+                "key_points": key_points,
+                "main_topics": main_topics,
+                "summary": detailed_summary or summary_text  # Use full text if parsing fails
+            }
+            
+            return {
+                "extracted_text": extracted_text,
+                "summary": structured_summary
+            }
+            
+        except Exception as e:
+            logger.error(f"Error with NVIDIA API: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error generating summary: {str(e)}")
+            
+    except Exception as e:
+        logger.error(f"Error processing PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Test endpoint
+@app.get("/test-llama")
+async def test_llama():
+    """Test NVIDIA Llama API connection"""
+    try:
+        completion = client.chat.completions.create(
+            model="nvidia/llama-3.1-nemotron-70b-instruct",
+            messages=[
+                {"role": "user", "content": "Say hello and confirm you're working!"}
+            ],
+            temperature=0.5,
+            max_tokens=50
+        )
+        
+        return {
+            "status": "success",
+            "response": completion.choices[0].message.content,
+            "model": "nvidia/llama-3.1-nemotron-70b-instruct"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "model": "nvidia/llama-3.1-nemotron-70b-instruct"
+        }
+
+############################ Page3 view ppdf######################
