@@ -421,7 +421,7 @@ Important: Please maintain this exact structure and format in your response, inc
         try:
             # Generate summary using NVIDIA's Llama 2
             completion = client.chat.completions.create(
-                model="nvidia/llama-3.1-nemotron-70b-instruct",  # Using standard Llama 2 model
+                model="mistralai/mixtral-8x7b-instruct-v0.1", 
                 messages=[
                     {"role": "user", "content": prompt}
                 ],
@@ -473,7 +473,7 @@ async def test_llama():
     """Test NVIDIA Llama API connection"""
     try:
         completion = client.chat.completions.create(
-            model="nvidia/llama-3.1-nemotron-70b-instruct",
+            model="mistralai/mixtral-8x7b-instruct-v0.1",
             messages=[
                 {"role": "user", "content": "Say hello and confirm you're working!"}
             ],
@@ -484,13 +484,13 @@ async def test_llama():
         return {
             "status": "success",
             "response": completion.choices[0].message.content,
-            "model": "nvidia/llama-3.1-nemotron-70b-instruct"
+            "model": "mistralai/mixtral-8x7b-instruct-v0.1"
         }
     except Exception as e:
         return {
             "status": "error",
             "error": str(e),
-            "model": "nvidia/llama-3.1-nemotron-70b-instruct"
+            "model": "mistralai/mixtral-8x7b-instruct-v0.1"
         }
 
 ############################ Page3 view ppdf######################
