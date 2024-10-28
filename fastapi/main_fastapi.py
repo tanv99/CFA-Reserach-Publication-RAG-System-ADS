@@ -393,7 +393,13 @@ async def process_pdf_content(folder_name: str):
         # Process PDF and get extracted text
         extracted_text = pdf_processor.process_pdf(pdf_content)
         
-        # Prepare prompt for summary
+        # Truncate text if too long (add this section)
+        max_chars = 25000  # Adjust this based on testing
+        full_text = extracted_text
+        if len(extracted_text) > max_chars:
+            extracted_text = extracted_text[:max_chars] + "\n\n[Text truncated due to length...]"
+        
+        # Prepare prompt for summary (your existing prompt)
         prompt = f"""Please analyze this document and provide a structured summary following this exact format:
 
 Document text:
@@ -419,9 +425,9 @@ Summary:
 Important: Please maintain this exact structure and format in your response, including the headers 'Key Points:', 'Main Topics:', and 'Summary:'."""
 
         try:
-            # Generate summary using NVIDIA's Llama 2
+            # Generate summary using NVIDIA's API
             completion = client.chat.completions.create(
-                model="mistralai/mixtral-8x7b-instruct-v0.1", 
+                model="mistralai/mixtral-8x7b-instruct-v0.1",
                 messages=[
                     {"role": "user", "content": prompt}
                 ],
@@ -445,17 +451,17 @@ Important: Please maintain this exact structure and format in your response, inc
                 elif "main topics:" in section.lower():
                     topics = [t.strip('- ').strip() for t in section.split('\n')[1:]]
                     main_topics = [t for t in topics if t]
-                elif any(x in section.lower() for x in ["summary:", "overview"]):
-                    detailed_summary = section.split('summary:', 1)[-1].strip()
+                elif "summary:" in section.lower():
+                    detailed_summary = section.split('Summary:', 1)[-1].strip()
             
             structured_summary = {
                 "key_points": key_points,
                 "main_topics": main_topics,
-                "summary": detailed_summary or summary_text  # Use full text if parsing fails
+                "summary": detailed_summary or summary_text
             }
             
             return {
-                "extracted_text": extracted_text,
+                "extracted_text": full_text,  # Return full text but use truncated for processing
                 "summary": structured_summary
             }
             
