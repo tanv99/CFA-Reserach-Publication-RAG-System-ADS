@@ -439,14 +439,14 @@ Important: Please maintain this exact structure and format in your response, inc
             
             for section in sections:
                 section = section.strip()
-                if "Key points" in section.lower():
+                if "key points:" in section.lower():
                     points = [p.strip('- ').strip() for p in section.split('\n')[1:]]
                     key_points = [p for p in points if p]
-                elif "Main topics" in section.lower():
+                elif "main topics:" in section.lower():
                     topics = [t.strip('- ').strip() for t in section.split('\n')[1:]]
                     main_topics = [t for t in topics if t]
-                elif any(x in section.lower() for x in ["summary", "overview"]):
-                    detailed_summary = section.split(':', 1)[-1].strip()
+                elif any(x in section.lower() for x in ["summary:", "overview"]):
+                    detailed_summary = section.split('summary:', 1)[-1].strip()
             
             structured_summary = {
                 "key_points": key_points,
