@@ -35,6 +35,10 @@ pathlib = "^1.0.1"
 boto3 = "^1.35.48"
 google-cloud-vision = "^3.8.0"
 pymupdf = "^1.24.12"
+llama-parse = "^0.5.12"
+llama-index-core = "^0.11.20"
+pillow = "<11.0.0"
+nest-asyncio = "^1.6.0"
 
 
 [build-system]
