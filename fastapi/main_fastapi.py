@@ -999,3 +999,41 @@ async def search_pdfs(query: SearchQuery):
     except Exception as e:
         logger.error(f"Error searching PDFs: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+class QuestionRequest(BaseModel):
+    query: str
+    top_k: Optional[int] = 5
+    max_tokens: Optional[int] = 1000
+
+@app.post("/pdfs/qa")
+async def question_answer(request: QuestionRequest):
+    """Search through PDFs and generate an answer to the question"""
+    try:
+        result = await text_processor.search_and_answer(
+            query=request.query,
+            top_k=request.top_k
+        )
+        
+        return {
+            "status": "success",
+            "query": request.query,
+            "answer": result["answer"],
+            "supporting_evidence": {
+                "chunks": [
+                    {
+                        "text": chunk["metadata"]["text"],
+                        "relevance_score": chunk["score"],
+                        "source": {
+                            "pdf_id": chunk["metadata"].get("pdf_id"),
+                            "chunk_index": chunk["metadata"].get("chunk_index")
+                        }
+                    }
+                    for chunk in result["supporting_chunks"]
+                ],
+                "total_chunks": result["total_chunks"]
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing QA request: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
