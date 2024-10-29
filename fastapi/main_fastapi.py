@@ -20,38 +20,38 @@ import os, pathlib
 from pathlib import Path
 from pdf_processor import PDFProcessor
 import requests
-from openai import OpenAI 
+from openai import OpenAI
 from typing import Any
-
-
+ 
+ 
 # Load environment variables
 load_dotenv()
-
+ 
 env_path = pathlib.Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
-
+ 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
+ 
 app = FastAPI()
-
+ 
 pdf_processor = PDFProcessor()
-
+ 
 # JWT settings
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+ 
 # OpenAI settings
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
+ 
 # GCP bucket settings
 TXT_BUCKET_NAME = os.getenv("TXT_BUCKET_NAME")
-
+ 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
+ 
 # Database connection
 def load_sql_db_config():
     try:
@@ -66,7 +66,7 @@ def load_sql_db_config():
     except pymysql.Error as e:
         logger.error(f"Error connecting to Cloud SQL: {e}")
         return None
-
+ 
 # Google Cloud Storage client setup
 credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 if credentials_path:
@@ -74,12 +74,12 @@ if credentials_path:
     storage_client = storage.Client(credentials=credentials)
 else:
     storage_client = storage.Client()
-
+ 
 # Models
 class UserRegister(BaseModel):
     email: EmailStr
     password: constr(min_length=8)
-
+ 
     @validator('password')
     def validate_password(cls, value):
         if len(value) < 8:
@@ -89,23 +89,23 @@ class UserRegister(BaseModel):
         if not any(char.isupper() for char in value):
             raise ValueError('Password should contain at least one uppercase letter')
         return value
-
+ 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-
-
-
+ 
+ 
+ 
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
+ 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
     except ValueError:
         logger.error(f"Invalid password hash encountered")
         return False
-
+ 
 def create_jwt_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -115,7 +115,7 @@ def create_jwt_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-
+ 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=401,
@@ -130,8 +130,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
     return email
-
-
+ 
+ 
     connection = load_sql_db_config()
     if not connection:
         raise HTTPException(status_code=500, detail="Database connection failed")
@@ -155,7 +155,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
  
     finally:
         connection.close()
-
+ 
 @app.post("/register")
 def register_user(user: UserRegister):
     connection = load_sql_db_config()
@@ -168,24 +168,24 @@ def register_user(user: UserRegister):
             existing_user = cursor.fetchone()
             if existing_user:
                 raise HTTPException(status_code=400, detail="Email already registered")
-
+ 
             # Check if password meets the minimum length requirement
             if len(user.password) < 8:
                 raise HTTPException(status_code=400, detail="Password must be at least 8 characters long and contain at least one uppercase letter and one lowercase letter.")
-
+ 
             hashed_password = hash_password(user.password)
-
+ 
             sql = "INSERT INTO users (email, password) VALUES (%s, %s)"
             cursor.execute(sql, (user.email, hashed_password))
         connection.commit()
         return {"message": "User registered successfully"}
-
+ 
     except pymysql.Error as e:
         raise HTTPException(status_code=400, detail=f"Registration failed: {str(e)}")
-
+ 
     finally:
         connection.close()
-
+ 
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     connection = load_sql_db_config()
@@ -204,7 +204,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
                     detail="Incorrect email. Please check your login credentials and try again.",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            
+           
             # Verify the password
             if not verify_password(form_data.password, user['password']):
                 logger.warning(f"Login attempt failed: Incorrect password - {form_data.username}")
@@ -213,7 +213,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
                     detail="Incorrect password. Please check your login credentials and try again.",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            
+           
             access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
             access_token = create_jwt_token(
                 data={"sub": user['email']}, expires_delta=access_token_expires
@@ -231,7 +231,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @app.get("/users/me")
 async def read_users_me(current_user: str = Depends(get_current_user)):
     return {"email": current_user}
-
+ 
 @app.get("/test-db-connection")
 async def test_db_connection():
     connection = load_sql_db_config()
@@ -247,19 +247,19 @@ async def test_db_connection():
         raise HTTPException(status_code=500, detail=f"Database connection test failed: {str(e)}")
     finally:
         connection.close()
-
-
+ 
+ 
 ###########################AWS  streamlit show documents ############
 class PDFMetadata(BaseModel):
     title: str
     metadata: Dict
     summary: Optional[str]
-
+ 
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 AWS_REGION = os.getenv("AWS_REGION")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
-
+ 
 def get_s3_client():
     """Create and return an S3 client"""
     return boto3.client(
@@ -268,14 +268,14 @@ def get_s3_client():
         aws_secret_access_key=AWS_SECRET_KEY,
         region_name=AWS_REGION
     )
-
+ 
 @app.get("/pdfs/all", response_model=List[PDFMetadata])
 async def get_all_pdfs():
     """Get all PDFs with their metadata and cover image URLs"""
     try:
         s3_client = get_s3_client()
         folders = set()
-        
+       
         # List all objects in the bucket
         paginator = s3_client.get_paginator('list_objects_v2')
         for page in paginator.paginate(Bucket=BUCKET_NAME):
@@ -284,7 +284,7 @@ async def get_all_pdfs():
                     parts = obj['Key'].split('/')
                     if len(parts) > 1:
                         folders.add(parts[0])
-        
+       
         # Get metadata and cover URLs for each PDF
         pdfs = []
         for folder in sorted(folders):
@@ -295,7 +295,7 @@ async def get_all_pdfs():
                 metadata = json.loads(metadata_obj['Body'].read().decode('utf-8'))
             except ClientError:
                 metadata = {}
-            
+           
             try:
                 # Get summary
                 summary_key = f"{folder}/summary.txt"
@@ -303,32 +303,32 @@ async def get_all_pdfs():
                 summary = summary_obj['Body'].read().decode('utf-8')
             except ClientError:
                 summary = "No summary available"
-            
+           
             # Create cover image URL
             cover_url = f"/pdfs/{folder}/cover"
-            
+           
             pdfs.append(PDFMetadata(
                 title=folder,
                 metadata=metadata,
                 summary=summary,
                 cover_url=cover_url
             ))
-        
+       
         return pdfs
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+ 
 @app.get("/pdfs/{folder_name}/document")
 async def get_pdf_document(folder_name: str):
     """Stream the PDF document"""
     try:
         s3_client = get_s3_client()
         pdf_key = f"{folder_name}/document.pdf"
-        
+       
         try:
             pdf_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=pdf_key)
             pdf_content = pdf_obj['Body'].read()
-            
+           
             return StreamingResponse(
                 io.BytesIO(pdf_content),
                 media_type="application/pdf",
@@ -338,21 +338,21 @@ async def get_pdf_document(folder_name: str):
             )
         except ClientError:
             raise HTTPException(status_code=404, detail="PDF not found")
-            
+           
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+ 
 @app.get("/pdfs/{folder_name}/cover")
 async def get_cover_image(folder_name: str):
     """Stream the cover image"""
     try:
         s3_client = get_s3_client()
         image_key = f"{folder_name}/image.jpg"
-        
+       
         try:
             image_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=image_key)
             image_content = image_obj['Body'].read()
-            
+           
             return StreamingResponse(
                 io.BytesIO(image_content),
                 media_type="image/jpeg",
@@ -362,10 +362,10 @@ async def get_cover_image(folder_name: str):
             )
         except ClientError:
             raise HTTPException(status_code=404, detail="Cover image not found")
-            
+           
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+   
 #################################################generte summay################
 # NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 # NVIDIA_API_URL = os.getenv("NVIDIA_API_URL")
@@ -374,7 +374,7 @@ client = OpenAI(
     base_url="https://integrate.api.nvidia.com/v1",
     api_key=os.getenv('NVIDIA_API_KEY')
 )
-
+ 
 @app.get("/pdfs/{folder_name}/process")
 async def process_pdf_content(folder_name: str):
     try:
@@ -389,41 +389,41 @@ async def process_pdf_content(folder_name: str):
         except Exception as e:
             logger.error(f"Error reading PDF from S3: {str(e)}")
             raise HTTPException(status_code=404, detail="PDF not found")
-        
+       
         # Process PDF and get extracted text
         extracted_text = pdf_processor.process_pdf(pdf_content)
-        
+       
         # Truncate text if too long (add this section)
         max_chars = 25000  # Adjust this based on testing
         full_text = extracted_text
         if len(extracted_text) > max_chars:
             extracted_text = extracted_text[:max_chars] + "\n\n[Text truncated due to length...]"
-        
+       
         # Prepare prompt for summary (your existing prompt)
         prompt = f"""Please analyze this document and provide a structured summary following this exact format:
-
+ 
 Document text:
 {extracted_text}
-
+ 
 Please structure your response exactly as follows:
-
+ 
 Key Points:
 - [First key point]
 - [Second key point]
 - [Third key point]
 (provide 3-5 key points)
-
+ 
 Main Topics:
 - [First main topic]
 - [Second main topic]
 - [Third main topic]
 (provide 2-3 main topics)
-
+ 
 Summary:
 [Provide a 2-3 paragraph summary here]
-
+ 
 Important: Please maintain this exact structure and format in your response, including the headers 'Key Points:', 'Main Topics:', and 'Summary:'."""
-
+ 
         try:
             # Generate summary using NVIDIA's API
             completion = client.chat.completions.create(
@@ -434,15 +434,15 @@ Important: Please maintain this exact structure and format in your response, inc
                 temperature=0.3,
                 max_tokens=1000
             )
-            
+           
             summary_text = completion.choices[0].message.content
-            
+           
             # Process the response into structured format
             sections = summary_text.split('\n\n')
             key_points = []
             main_topics = []
             detailed_summary = ""
-            
+           
             for section in sections:
                 section = section.strip()
                 if "key points:" in section.lower():
@@ -453,26 +453,26 @@ Important: Please maintain this exact structure and format in your response, inc
                     main_topics = [t for t in topics if t]
                 elif "summary:" in section.lower():
                     detailed_summary = section.split('Summary:', 1)[-1].strip()
-            
+           
             structured_summary = {
                 "key_points": key_points,
                 "main_topics": main_topics,
                 "summary": detailed_summary or summary_text
             }
-            
+           
             return {
                 "extracted_text": full_text,  # Return full text but use truncated for processing
                 "summary": structured_summary
             }
-            
+           
         except Exception as e:
             logger.error(f"Error with NVIDIA API: {str(e)}")
             raise HTTPException(status_code=500, detail=f"Error generating summary: {str(e)}")
-            
+           
     except Exception as e:
         logger.error(f"Error processing PDF: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
+ 
 # Test endpoint
 @app.get("/test-llama")
 async def test_llama():
@@ -486,7 +486,7 @@ async def test_llama():
             temperature=0.5,
             max_tokens=50
         )
-        
+       
         return {
             "status": "success",
             "response": completion.choices[0].message.content,
@@ -498,11 +498,11 @@ async def test_llama():
             "error": str(e),
             "model": "mistralai/mixtral-8x7b-instruct-v0.1"
         }
-
+ 
 ############################ Page3 view ppdf######################
 import nest_asyncio
 nest_asyncio.apply()
-
+ 
 from fastapi import FastAPI, HTTPException
 from llama_parse import LlamaParse
 from typing import List, Dict, Any
@@ -517,37 +517,32 @@ from botocore.exceptions import ClientError
 from PIL import Image
 import io
 from dotenv import load_dotenv
-
+ 
 # Load environment variables
 load_dotenv()
-
+ 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
+ 
+ 
 # Initialize environment variables
 LLAMAPARSE_API_KEY = os.getenv("LLAMAPARSE_API_KEY")
 AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
 AWS_REGION = os.getenv("AWS_REGION")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
-
-# Define storage directories
-BASE_DIR = Path(__file__).resolve().parent
-STORAGE_DIR = BASE_DIR / "storage"
-EXTRACTION_DIR = STORAGE_DIR / "extractions"
-IMAGES_DIR = STORAGE_DIR / "images"
-
+ 
+# Define base paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STORAGE_DIR = os.path.join(BASE_DIR, "storage")
+EXTRACTION_DIR = os.path.join(STORAGE_DIR, "extractions")
+IMAGES_DIR = os.path.join(STORAGE_DIR, "images")
+ 
 # Create directories if they don't exist
-def setup_storage():
-    STORAGE_DIR.mkdir(parents=True, exist_ok=True)
-    EXTRACTION_DIR.mkdir(parents=True, exist_ok=True)
-    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
-    logger.info(f"Storage directories initialized at {STORAGE_DIR}")
-
-setup_storage()
-
+os.makedirs(EXTRACTION_DIR, exist_ok=True)
+os.makedirs(IMAGES_DIR, exist_ok=True)
+ 
 def get_s3_client():
     """Create and return an S3 client"""
     try:
@@ -561,7 +556,8 @@ def get_s3_client():
     except Exception as e:
         logger.error(f"Failed to create S3 client: {str(e)}")
         raise
-
+ 
+ 
 class PDFProcessor_llama:
     def __init__(self, api_key: str):
         """Initialize LlamaParse with enhanced multimodal configuration"""
@@ -571,382 +567,193 @@ class PDFProcessor_llama:
             use_vendor_multimodal_model=True,
             vendor_multimodal_model_name="anthropic-sonnet-3.5"
         )
-        
-    def process_pdf(self, pdf_path: str) -> Dict[str, Any]:
-        """Process PDF directly with LlamaParse"""
+       
+    def process_pdf(self, pdf_path: str, folder_name: str) -> Dict[str, Any]:
+        """Process PDF and extract content using LlamaParse"""
         try:
             logger.info(f"Processing PDF: {pdf_path}")
-            
-            # Process PDF directly with LlamaParse
-            documents = self.parser.load_data(pdf_path)
-            
-            logger.info(f"Successfully processed PDF with {len(documents)} pages")
-            
-            # Extract content in markdown format
+           
+            # First get the markdown content
+            logger.info("Getting JSON result...")
+            md_json_objs = self.parser.get_json_result(pdf_path)
+           
+            # Check if we got valid results
+            if not md_json_objs or not isinstance(md_json_objs, list):
+                raise ValueError("Invalid JSON result from parser")
+           
+            md_json_list = md_json_objs[0]["pages"]
+            logger.info(f"Successfully processed {len(md_json_list)} pages")
+           
+            # Create image directory with absolute path
+            image_dir = os.path.abspath(os.path.join(IMAGES_DIR, folder_name))
+            os.makedirs(image_dir, exist_ok=True)
+            logger.info(f"Created image directory at: {image_dir}")
+           
+            # Extract images with explicit path
+            logger.info("Extracting images...")
+            image_dicts = self.parser.get_images(
+                md_json_objs,
+                image_dir
+            )
+            logger.info("Found {len(image_dicts) if image_dicts else 0} images")
+           
+            # Structure the content
             extracted_content = {
-                "markdown_content": [],
+                "pages": [],
+                "images": [],
                 "metadata": {
-                    "total_pages": len(documents),
+                    "total_pages": len(md_json_list),
                     "file_name": os.path.basename(pdf_path),
                     "extraction_time": datetime.now().isoformat()
                 }
             }
-            
-            # Get markdown content from each page
-            for idx, doc in enumerate(documents):
-                extracted_content["markdown_content"].append({
-                    "page_num": idx + 1,
-                    "content": doc.text,  # This will be in markdown format
+           
+            # Process each page's markdown content
+            for page in md_json_list:
+                extracted_content["pages"].append({
+                    "page_num": page.get("page", 0),
+                    "content": page.get("md", ""),
+                    "has_images": bool(page.get("images", []))
                 })
-            
+           
+            # Process image information if any images were found
+            if image_dicts:
+                for idx, img in enumerate(image_dicts):
+                    try:
+                        image_data = {
+                            "file_name": f"image_{idx}.png" if not img.get("file_path") else os.path.basename(img["file_path"]),
+                            "local_path": os.path.relpath(img.get("file_path", ""), BASE_DIR) if img.get("file_path") else "",
+                            "page_number": img.get("page_number", 0),
+                            "caption": img.get("caption", "")
+                        }
+                        extracted_content["images"].append(image_data)
+                    except Exception as e:
+                        logger.error(f"Error processing image {idx}: {str(e)}")
+           
             return extracted_content
-            
+           
         except Exception as e:
             logger.error(f"Error processing PDF: {str(e)}")
             raise
-
-@app.post("/pdfs/{folder_name}/extract")
-def extract_pdf_content(folder_name: str):
-    """Extract content from an existing PDF in S3"""
+ 
+# Add this test endpoint to verify paths and processing
+@app.post("/pdfs/{folder_name}/test-extract")
+async def test_extraction(folder_name: str):
+    """Test extraction process with detailed logging"""
     try:
+        # Log environment setup
+        logger.info("Testing extraction process...")
+        logger.info(f"Base directory: {BASE_DIR}")
+        logger.info(f"Storage directory: {STORAGE_DIR}")
+        logger.info(f"Images directory: {IMAGES_DIR}")
+        
         # Verify API key
         if not LLAMAPARSE_API_KEY:
-            raise HTTPException(
-                status_code=500,
-                detail="LLAMAPARSE_API_KEY not configured"
-            )
-        
-        logger.info(f"Starting extraction for folder: {folder_name}")
+            return {
+                "status": "error",
+                "detail": "LLAMAPARSE_API_KEY not configured"
+            }
+        logger.info("API key found")
         
         # Get PDF from S3
         s3_client = get_s3_client()
         pdf_key = f"{folder_name}/document.pdf"
         
         try:
-            # Download PDF
+            # Get PDF content
             pdf_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=pdf_key)
             pdf_content = pdf_obj['Body'].read()
+            logger.info(f"Retrieved PDF from S3: {len(pdf_content)} bytes")
+            
+            # Create folder for extraction
+            temp_dir = os.path.join(EXTRACTION_DIR, folder_name)
+            os.makedirs(temp_dir, exist_ok=True)
             
             # Save PDF temporarily
-            temp_dir = EXTRACTION_DIR / folder_name
-            temp_dir.mkdir(parents=True, exist_ok=True)
-            temp_path = temp_dir / "document.pdf"
-            
-            logger.info(f"Saving PDF to: {temp_path}")
+            temp_path = os.path.join(temp_dir, "document.pdf")
             with open(temp_path, "wb") as f:
                 f.write(pdf_content)
+            logger.info(f"Saved PDF to: {temp_path}")
             
-            # Process PDF
+            # Initialize processor
             processor = PDFProcessor_llama(api_key=LLAMAPARSE_API_KEY)
-            extracted_content = processor.process_pdf(str(temp_path))
             
-            # Save markdown content to file
-            markdown_path = temp_dir / "extracted_content.md"
+            # Process content
+            extracted_content = processor.process_pdf(temp_path, folder_name)
+            
+            # Save extracted content as markdown
+            markdown_path = os.path.join(temp_dir, "extracted_content.md")
+            markdown_content = ""
+            
+            # Convert extracted content to markdown format
+            for page in extracted_content["pages"]:
+                markdown_content += f"\n\n## Page {page['page_num']}\n\n"
+                markdown_content += page["content"]
+            
+            # Save markdown content
             with open(markdown_path, "w", encoding="utf-8") as f:
-                for page in extracted_content["markdown_content"]:
-                    f.write(f"\n\n## Page {page['page_num']}\n\n")
-                    f.write(page["content"])
+                f.write(markdown_content)
+            logger.info(f"Saved markdown content to: {markdown_path}")
             
-            # Clean up
+            # Save image index if there are images
+            if extracted_content["images"]:
+                image_index_path = os.path.join(temp_dir, "image_index.json")
+                with open(image_index_path, "w") as f:
+                    json.dump(extracted_content["images"], f, indent=2)
+                logger.info(f"Saved image index to: {image_index_path}")
+            
+            # Clean up temporary PDF
             os.remove(temp_path)
             
             return {
                 "status": "success",
-                "metadata": extracted_content["metadata"],
-                "content": {
-                    "pages": extracted_content["markdown_content"],
-                    "markdown_file": str(markdown_path.relative_to(BASE_DIR))
+                "paths": {
+                    "base_dir": BASE_DIR,
+                    "storage_dir": STORAGE_DIR,
+                    "images_dir": IMAGES_DIR,
+                    "markdown_path": markdown_path,
+                    "image_index_path": image_index_path if extracted_content["images"] else None
                 },
-                "statistics": {
-                    "total_pages": len(extracted_content["markdown_content"]),
-                    "extraction_time": extracted_content["metadata"]["extraction_time"]
-                }
+                "content": extracted_content
             }
             
         except ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchKey':
-                raise HTTPException(status_code=404, detail=f"PDF not found: {pdf_key}")
-            raise HTTPException(status_code=500, detail=str(e))
+            return {
+                "status": "error",
+                "detail": str(e),
+                "error_code": e.response['Error']['Code'] if hasattr(e, 'response') else None
+            }
             
     except Exception as e:
-        logger.error(f"Error processing PDF: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Add a utility endpoint to get the markdown content
-@app.get("/pdfs/{folder_name}/markdown")
-def get_markdown_content(folder_name: str):
-    """Get the markdown content of the processed PDF"""
-    try:
-        markdown_path = EXTRACTION_DIR / folder_name / "extracted_content.md"
-        
-        if not markdown_path.exists():
-            raise HTTPException(
-                status_code=404,
-                detail="Markdown file not found. Please process the PDF first."
-            )
-            
-        with open(markdown_path, "r", encoding="utf-8") as f:
-            content = f.read()
-            
+        logger.error(f"Error in test extraction: {str(e)}")
         return {
-            "folder_name": folder_name,
-            "markdown_content": content,
-            "file_path": str(markdown_path.relative_to(BASE_DIR))
+            "status": "error",
+            "detail": str(e)
         }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-
-
 ################test##################
 # Add these imports to your existing imports
 from fastapi import BackgroundTasks
 from typing import Dict, Any
 import tempfile
-
+ 
 # Add these test endpoints to your FastAPI application
+ 
 
-@app.get("/test/llamaparse")
-async def test_llamaparse():
-    """Test LlamaParse API connection and functionality"""
-    try:
-        if not LLAMAPARSE_API_KEY:
-            return {
-                "status": "error",
-                "message": "LLAMAPARSE_API_KEY not found in environment variables",
-                "api_key_found": False
-            }
-            
-        # Create a temporary test PDF
-        with tempfile.NamedTemporaryFile(suffix='.pdf', mode='w', delete=False) as f:
-            test_pdf_path = f.name
-            f.write("This is a test PDF content")
-        
-        try:
-            # Initialize LlamaParse
-            parser = LlamaParse(
-                api_key=LLAMAPARSE_API_KEY,
-                result_type="markdown"
-            )
-            
-            # Test parsing
-            documents = parser.load_data(test_pdf_path)
-            
-            return {
-                "status": "success",
-                "message": "LlamaParse connection successful",
-                "api_key_found": True,
-                "api_key_preview": f"{LLAMAPARSE_API_KEY[:5]}...{LLAMAPARSE_API_KEY[-5:]}",
-                "test_results": {
-                    "documents_parsed": len(documents),
-                    "sample_content": documents[0].text if documents else None
-                }
-            }
-            
-        except Exception as e:
-            return {
-                "status": "error",
-                "message": f"Error testing PDF parsing: {str(e)}",
-                "api_key_found": True,
-                "api_key_preview": f"{LLAMAPARSE_API_KEY[:5]}...{LLAMAPARSE_API_KEY[-5:]}"
-            }
-            
-        finally:
-            # Clean up test file
-            if os.path.exists(test_pdf_path):
-                os.remove(test_pdf_path)
-            
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Error initializing LlamaParse: {str(e)}",
-            "api_key_found": bool(LLAMAPARSE_API_KEY)
-        }
-
-@app.get("/test/s3/{folder_name}")
-async def test_s3_access(folder_name: str):
-    """Test S3 access and PDF retrieval"""
-    try:
-        s3_client = get_s3_client()
-        pdf_key = f"{folder_name}/document.pdf"
-        
-        # Test bucket access
-        try:
-            s3_client.head_bucket(Bucket=BUCKET_NAME)
-        except ClientError as e:
-            return {
-                "status": "error",
-                "message": "Cannot access S3 bucket",
-                "error": str(e),
-                "bucket": BUCKET_NAME
-            }
-        
-        # Test file access
-        try:
-            s3_client.head_object(Bucket=BUCKET_NAME, Key=pdf_key)
-            
-            # Get file metadata
-            response = s3_client.get_object(Bucket=BUCKET_NAME, Key=pdf_key)
-            file_size = response['ContentLength']
-            last_modified = response['LastModified'].isoformat()
-            
-            return {
-                "status": "success",
-                "message": "PDF file found and accessible",
-                "file_details": {
-                    "bucket": BUCKET_NAME,
-                    "key": pdf_key,
-                    "size_bytes": file_size,
-                    "last_modified": last_modified
-                }
-            }
-            
-        except ClientError as e:
-            return {
-                "status": "error",
-                "message": "Cannot access PDF file",
-                "error": str(e),
-                "file_path": pdf_key
-            }
-            
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": "Error testing S3 access",
-            "error": str(e)
-        }
-
-@app.post("/test/extraction/{folder_name}")
-async def test_extraction(
-    folder_name: str,
-    background_tasks: BackgroundTasks
-):
-    """Test complete extraction process"""
-    results = {
-        "s3_access": None,
-        "llamaparse": None,
-        "extraction": None,
-        "storage": None
-    }
-    
-    try:
-        # 1. Test S3 access
-        s3_client = get_s3_client()
-        pdf_key = f"{folder_name}/document.pdf"
-        
-        try:
-            pdf_obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=pdf_key)
-            pdf_content = pdf_obj['Body'].read()
-            results["s3_access"] = {
-                "status": "success",
-                "message": "Successfully retrieved PDF from S3",
-                "file_size": len(pdf_content)
-            }
-        except Exception as e:
-            results["s3_access"] = {
-                "status": "error",
-                "message": str(e)
-            }
-            return results
-        
-        # 2. Test LlamaParse
-        if not LLAMAPARSE_API_KEY:
-            results["llamaparse"] = {
-                "status": "error",
-                "message": "LLAMAPARSE_API_KEY not found"
-            }
-            return results
-            
-        try:
-            parser = LlamaParse(
-                api_key=LLAMAPARSE_API_KEY,
-                result_type="markdown"
-            )
-            results["llamaparse"] = {
-                "status": "success",
-                "message": "LlamaParse initialized successfully"
-            }
-        except Exception as e:
-            results["llamaparse"] = {
-                "status": "error",
-                "message": str(e)
-            }
-            return results
-        
-        # 3. Test storage directories
-        try:
-            temp_dir = EXTRACTION_DIR / folder_name
-            temp_dir.mkdir(parents=True, exist_ok=True)
-            temp_path = temp_dir / "temp.pdf"
-            
-            with open(temp_path, "wb") as f:
-                f.write(pdf_content)
-                
-            results["storage"] = {
-                "status": "success",
-                "message": "Storage directories created and PDF saved",
-                "paths": {
-                    "extraction_dir": str(temp_dir),
-                    "temp_pdf": str(temp_path)
-                }
-            }
-        except Exception as e:
-            results["storage"] = {
-                "status": "error",
-                "message": str(e)
-            }
-            return results
-        
-        # 4. Test extraction
-        try:
-            processor = PDFProcessor_llama(api_key=LLAMAPARSE_API_KEY)
-            extracted_content = processor.process_pdf(str(temp_path))
-            
-            results["extraction"] = {
-                "status": "success",
-                "message": "Extraction completed successfully",
-                "statistics": {
-                    "total_pages": len(extracted_content["text"]),
-                    "total_text_blocks": len(extracted_content["text"]),
-                    "total_images": len(extracted_content["images"]),
-                    "total_tables": len(extracted_content["tables"])
-                }
-            }
-            
-            # Clean up in background
-            background_tasks.add_task(os.remove, temp_path)
-            
-        except Exception as e:
-            results["extraction"] = {
-                "status": "error",
-                "message": str(e)
-            }
-        
-        return results
-        
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Error in test process: {str(e)}"
-        }
-    
 ######################Embedding#######################
 from text_processor import TextProcessor  
 text_processor = TextProcessor()
 class SearchQuery(BaseModel):
     query: str
     top_k: Optional[int] = 5
-
+ 
 @app.post("/pdfs/{folder_name}/process-embeddings")
 async def process_pdf_embeddings(folder_name: str):
     """Process PDF content and store embeddings"""
     try:
-        # Get markdown content from previous extraction
-        markdown_path = EXTRACTION_DIR / folder_name / "extracted_content.md"
+        # Get markdown content from previous extraction using os.path.join
+        markdown_path = os.path.join(EXTRACTION_DIR, folder_name, "extracted_content.md")
         
-        if not markdown_path.exists():
+        if not os.path.exists(markdown_path):
             raise HTTPException(
                 status_code=404,
                 detail="Markdown content not found. Please process the PDF first."
@@ -973,6 +780,55 @@ async def process_pdf_embeddings(folder_name: str):
         
     except Exception as e:
         logger.error(f"Error processing embeddings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def get_image_info(folder_name: str):
+    """Get information about extracted images"""
+    try:
+        image_index_path = os.path.join(EXTRACTION_DIR, folder_name, "image_index.json")
+        
+        if not os.path.exists(image_index_path):
+            raise HTTPException(
+                status_code=404,
+                detail="Image index not found. Please process the PDF first."
+            )
+            
+        with open(image_index_path, "r") as f:
+            image_info = json.load(f)
+            
+        return {
+            "folder_name": folder_name,
+            "total_images": len(image_info),
+            "images": image_info
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
+@app.post("/pdfs/search")
+async def search_pdfs(query: SearchQuery):
+    """Search through PDF content using embeddings"""
+    try:
+        results = text_processor.search_similar(query.query, query.top_k)
+       
+        # Format results
+        formatted_results = []
+        for match in results.matches:
+            formatted_results.append({
+                "score": match.score,
+                "pdf_id": match.metadata.get("pdf_id"),
+                "chunk_index": match.metadata.get("chunk_index"),
+                "text": match.metadata.get("text")
+            })
+       
+        return {
+            "query": query.query,
+            "results": formatted_results
+        }
+       
+    except Exception as e:
+        logger.error(f"Error searching PDFs: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/pdfs/search")
