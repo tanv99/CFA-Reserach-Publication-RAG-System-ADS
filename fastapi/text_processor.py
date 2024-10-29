@@ -157,6 +157,71 @@ class TextProcessor:
         except Exception as e:
             logger.error(f"Error in search_similar: {str(e)}")
             raise
+        
+    def generate_answer_from_chunks(self, query: str, chunks: List[Dict], max_tokens: int = 1000) -> str:
+        """Generate an answer using the LLM based on retrieved chunks"""
+        try:
+            # Format the chunks into a single context
+            context = "\n\n".join([
+                f"Chunk {i+1}:\n{chunk['metadata']['text']}"
+                for i, chunk in enumerate(chunks)
+            ])
+            
+            # Create the prompt
+            prompt = f"""Please provide a comprehensive answer to the following question using only the provided context. 
+            If the answer cannot be fully derived from the context, please say so.
+
+            Question: {query}
+
+            Context:
+            {context}
+
+            Please provide a detailed answer and cite specific parts of the context where appropriate."""
+
+            # Generate response using NVIDIA model
+            response = self.embeddings_client.chat.completions.create(
+                model="mistralai/mixtral-8x7b-instruct-v0.1",
+                messages=[
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=max_tokens
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating answer from chunks: {str(e)}")
+            raise
+
+    async def search_and_answer(self, query: str, top_k: int = 5) -> Dict:
+        """Search for relevant chunks and generate an answer"""
+        try:
+            # First, search for relevant chunks
+            search_results = self.search_similar(query, top_k)
+            
+            # Extract chunks from results
+            chunks = [
+                {
+                    "score": match.score,
+                    "metadata": match.metadata
+                }
+                for match in search_results.matches
+            ]
+            
+            # Generate answer using chunks
+            answer = self.generate_answer_from_chunks(query, chunks)
+            
+            return {
+                "query": query,
+                "answer": answer,
+                "supporting_chunks": chunks,
+                "total_chunks": len(chunks)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in search and answer: {str(e)}")
+            raise
 
 # Export the class
 __all__ = ['TextProcessor']
