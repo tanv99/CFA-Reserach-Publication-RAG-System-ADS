@@ -931,3 +931,71 @@ async def test_extraction(
             "status": "error",
             "message": f"Error in test process: {str(e)}"
         }
+    
+######################Embedding#######################
+from text_processor import TextProcessor  
+text_processor = TextProcessor()
+class SearchQuery(BaseModel):
+    query: str
+    top_k: Optional[int] = 5
+
+@app.post("/pdfs/{folder_name}/process-embeddings")
+async def process_pdf_embeddings(folder_name: str):
+    """Process PDF content and store embeddings"""
+    try:
+        # Get markdown content from previous extraction
+        markdown_path = EXTRACTION_DIR / folder_name / "extracted_content.md"
+        
+        if not markdown_path.exists():
+            raise HTTPException(
+                status_code=404,
+                detail="Markdown content not found. Please process the PDF first."
+            )
+        
+        # Read markdown content
+        with open(markdown_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        # Create metadata
+        metadata = {
+            "pdf_id": folder_name,
+            "source": "pdf",
+            "processed_date": datetime.now().isoformat()
+        }
+        
+        # Process and store embeddings
+        text_processor.process_and_store(content, metadata)
+        
+        return {
+            "status": "success",
+            "message": f"Successfully processed and stored embeddings for {folder_name}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing embeddings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/pdfs/search")
+async def search_pdfs(query: SearchQuery):
+    """Search through PDF content using embeddings"""
+    try:
+        results = text_processor.search_similar(query.query, query.top_k)
+        
+        # Format results
+        formatted_results = []
+        for match in results.matches:
+            formatted_results.append({
+                "score": match.score,
+                "pdf_id": match.metadata.get("pdf_id"),
+                "chunk_index": match.metadata.get("chunk_index"),
+                "text": match.metadata.get("text")
+            })
+        
+        return {
+            "query": query.query,
+            "results": formatted_results
+        }
+        
+    except Exception as e:
+        logger.error(f"Error searching PDFs: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
