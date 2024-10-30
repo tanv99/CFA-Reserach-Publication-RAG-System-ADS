@@ -921,50 +921,167 @@ class QuestionRequest(BaseModel):
     top_k: Optional[int] = 5
     max_tokens: Optional[int] = 1000
 
-@app.post("/pdfs/qa")
-async def question_answer(request: QuestionRequest):
-    """Search through PDFs and generate an answer to the question"""
+# @app.post("/pdfs/qa")
+# async def question_answer(request: QuestionRequest):
+#     """Search through PDFs and generate an answer to the question"""
+#     try:
+#         result = await text_processor.search_and_answer(
+#             query=request.query,
+#             top_k=request.top_k
+#         )
+        
+#         # Format supporting chunks with complete node information
+#         formatted_chunks = []
+#         for chunk in result["supporting_chunks"]:
+#             try:
+#                 node_info = json.loads(chunk["metadata"]["text"])
+#                 formatted_chunks.append({
+#                     "score": chunk["score"],
+#                     "page_num": node_info["page_num"],
+#                     "image_path": node_info["image_path"],
+#                     "content": node_info["content"],
+#                     "source": {
+#                         "pdf_id": chunk["metadata"].get("pdf_id"),
+#                         "chunk_index": chunk["metadata"].get("chunk_index")
+#                     }
+#                 })
+#             except json.JSONDecodeError:
+#                 formatted_chunks.append({
+#                     "text": chunk["metadata"]["text"],
+#                     "relevance_score": chunk["score"],
+#                     "source": {
+#                         "pdf_id": chunk["metadata"].get("pdf_id"),
+#                         "chunk_index": chunk["metadata"].get("chunk_index")
+#                     }
+#                 })
+        
+#         return {
+#             "status": "success",
+#             "query": request.query,
+#             "answer": result["answer"],
+#             "supporting_evidence": {
+#                 "chunks": formatted_chunks,
+#                 "total_chunks": result["total_chunks"]
+#             }
+#         }
+        
+#     except Exception as e:
+#         logger.error(f"Error processing QA request: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+
+class ChunkProcessingRequest(BaseModel):
+    chunks: List[dict]
+    query: Optional[str] = None
+    max_tokens: Optional[int] = 1000
+    temperature: Optional[float] = 0.3
+
+@app.post("/pdfs/{folder_name}/search-and-process")
+async def search_and_process_chunks(folder_name: str, query: SearchQuery):
+    """
+    Search for chunks and process them with LLM in one go
+    """
     try:
-        result = await text_processor.search_and_answer(
-            query=request.query,
-            top_k=request.top_k
+        # Step 1: Get search results
+        filter_condition = {"pdf_id": folder_name}
+        search_results = text_processor.search_similar(
+            query.query, 
+            query.top_k,
+            filter_condition=filter_condition
         )
         
-        # Format supporting chunks with complete node information
-        formatted_chunks = []
-        for chunk in result["supporting_chunks"]:
-            try:
-                node_info = json.loads(chunk["metadata"]["text"])
-                formatted_chunks.append({
-                    "score": chunk["score"],
-                    "page_num": node_info["page_num"],
-                    "image_path": node_info["image_path"],
-                    "content": node_info["content"],
-                    "source": {
-                        "pdf_id": chunk["metadata"].get("pdf_id"),
-                        "chunk_index": chunk["metadata"].get("chunk_index")
-                    }
-                })
-            except json.JSONDecodeError:
-                formatted_chunks.append({
-                    "text": chunk["metadata"]["text"],
-                    "relevance_score": chunk["score"],
-                    "source": {
-                        "pdf_id": chunk["metadata"].get("pdf_id"),
-                        "chunk_index": chunk["metadata"].get("chunk_index")
-                    }
-                })
+        logging.info(f"Found {len(search_results)} relevant chunks")
         
-        return {
+        # Step 2: Process chunks with LLM
+        chunks_text = []
+        image_paths = []
+        
+        # Process each chunk
+        for i, chunk in enumerate(search_results, 1):
+            # Format chunk text with metadata
+            chunk_text = f"""
+Chunk {i} (Page {chunk['page_num']}):
+{chunk['content']}
+Relevance Score: {chunk['score']}
+            """
+            chunks_text.append(chunk_text)
+            
+            # Collect image paths
+            if chunk.get('image_path'):
+                image_paths.append({
+                    'page': chunk['page_num'],
+                    'path': chunk['image_path']
+                })
+
+        # Create LLM prompt
+        base_prompt = f"""
+Please analyze these text chunks and provide a comprehensive response.
+Include specific references to the content and maintain academic precision.
+
+Context from documents:
+{'-' * 50}
+{'\n'.join(chunks_text)}
+{'-' * 50}
+
+Question/Topic: {query.query}
+
+Please provide:
+1. A concise summary of the main points
+2. Key concepts and their relationships
+3. Relevant quotes or specific references from the text
+4. Any significant conclusions or findings
+
+Detailed Response:
+"""
+
+        # Generate LLM response
+        llm_response = text_processor.embeddings_client.chat.completions.create(
+            model="mistralai/mixtral-8x7b-instruct-v0.1",
+            messages=[
+                {"role": "system", "content": "You are a knowledgeable assistant that provides detailed, well-structured analyses of academic content."},
+                {"role": "user", "content": base_prompt}
+            ],
+            temperature=0.3,
+            max_tokens=1000
+        )
+        
+        # Step 3: Structure the final response
+        response = {
             "status": "success",
-            "query": request.query,
-            "answer": result["answer"],
-            "supporting_evidence": {
-                "chunks": formatted_chunks,
-                "total_chunks": result["total_chunks"]
+            "query_info": {
+                "original_query": query.query,
+                "folder_name": folder_name,
+                "chunks_analyzed": len(search_results)
+            },
+            "analysis": {
+                "summary": llm_response.choices[0].message.content,
+                "source_materials": [
+                    {
+                        "chunk_number": i+1,
+                        "page_number": chunk['page_num'],
+                        "content": chunk['content'],
+                        "relevance_score": chunk['score'],
+                        "image_info": {
+                            "available": bool(chunk.get('image_path')),
+                            "path": chunk.get('image_path', None)
+                        }
+                    }
+                    for i, chunk in enumerate(search_results)
+                ],
+                "images": image_paths,
+                "metadata": {
+                    "total_chunks": len(search_results),
+                    "total_images": len(image_paths),
+                    "model_used": "mixtral-8x7b-instruct-v0.1",
+                    "processing_timestamp": datetime.now().isoformat()
+                }
             }
         }
         
+        return response
+        
     except Exception as e:
-        logger.error(f"Error processing QA request: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.error(f"Error in search and process: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing request: {str(e)}"
+        )
