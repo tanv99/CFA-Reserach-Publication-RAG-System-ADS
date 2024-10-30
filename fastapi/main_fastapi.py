@@ -916,172 +916,271 @@ async def search_pdfs(folder_name: str, query: SearchQuery):
         logger.error(f"Error searching PDF {folder_name}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-class QuestionRequest(BaseModel):
-    query: str
-    top_k: Optional[int] = 5
-    max_tokens: Optional[int] = 1000
+from pydantic import BaseModel, Field
+from typing import List, Union, Optional, Dict, Any
+from datetime import datetime
+import logging
+from fastapi import HTTPException
 
-# @app.post("/pdfs/qa")
-# async def question_answer(request: QuestionRequest):
-#     """Search through PDFs and generate an answer to the question"""
-#     try:
-#         result = await text_processor.search_and_answer(
-#             query=request.query,
-#             top_k=request.top_k
-#         )
-        
-#         # Format supporting chunks with complete node information
-#         formatted_chunks = []
-#         for chunk in result["supporting_chunks"]:
-#             try:
-#                 node_info = json.loads(chunk["metadata"]["text"])
-#                 formatted_chunks.append({
-#                     "score": chunk["score"],
-#                     "page_num": node_info["page_num"],
-#                     "image_path": node_info["image_path"],
-#                     "content": node_info["content"],
-#                     "source": {
-#                         "pdf_id": chunk["metadata"].get("pdf_id"),
-#                         "chunk_index": chunk["metadata"].get("chunk_index")
-#                     }
-#                 })
-#             except json.JSONDecodeError:
-#                 formatted_chunks.append({
-#                     "text": chunk["metadata"]["text"],
-#                     "relevance_score": chunk["score"],
-#                     "source": {
-#                         "pdf_id": chunk["metadata"].get("pdf_id"),
-#                         "chunk_index": chunk["metadata"].get("chunk_index")
-#                     }
-#                 })
-        
-#         return {
-#             "status": "success",
-#             "query": request.query,
-#             "answer": result["answer"],
-#             "supporting_evidence": {
-#                 "chunks": formatted_chunks,
-#                 "total_chunks": result["total_chunks"]
-#             }
-#         }
-        
-#     except Exception as e:
-#         logger.error(f"Error processing QA request: {str(e)}")
-#         raise HTTPException(status_code=500, detail=str(e))
+class TextBlock(BaseModel):
+    """Text block."""
+    text: str = Field(..., description="The text for this block.")
 
-class ChunkProcessingRequest(BaseModel):
-    chunks: List[dict]
-    query: Optional[str] = None
-    max_tokens: Optional[int] = 1000
-    temperature: Optional[float] = 0.3
+class ImageBlock(BaseModel):
+    """Image block."""
+    file_path: str = Field(..., description="File path to the image.")
 
+class ReportOutput(BaseModel):
+    """Data model for a report.
+    Can contain a mix of text and image blocks. MUST contain at least one image block.
+    """
+    blocks: List[Union[TextBlock, ImageBlock]] = Field(
+        ..., description="A list of text and image blocks."
+    )
+    
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from typing import List, Union, Optional, Dict, Any
+from datetime import datetime
+import logging
+from fastapi.responses import FileResponse, JSONResponse
+
+import os
+import urllib.parse
+from pathlib import Path
+
+# Update the Pydantic models - remove IPython dependency
+class TextBlock(BaseModel):
+    """Text block."""
+    text: str = Field(..., description="The text for this block.")
+
+class ImageBlock(BaseModel):
+    """Image block."""
+    file_path: str = Field(..., description="File path to the image.")
+
+class ReportOutput(BaseModel):
+    """Data model for a report."""
+    blocks: List[Union[TextBlock, ImageBlock]] = Field(
+        ..., 
+        description="A list of text and image blocks."
+    )
+
+    def render(self) -> None:
+        """Render all blocks in the report."""
+        for block in self.blocks:
+            if isinstance(block, TextBlock):
+                display(Markdown(block.text))
+            elif isinstance(block, ImageBlock):
+                display(Image(filename=block.file_path))
+  
+  
+     
 @app.post("/pdfs/{folder_name}/search-and-process")
 async def search_and_process_chunks(folder_name: str, query: SearchQuery):
     """
-    Search for chunks and process them with LLM in one go
+    Search through PDF content and generate a structured report with text and images.
     """
     try:
-        # Step 1: Get search results
+        # 1. Get search results
         filter_condition = {"pdf_id": folder_name}
         search_results = text_processor.search_similar(
-            query.query, 
+            query.query,
             query.top_k,
             filter_condition=filter_condition
         )
         
-        logging.info(f"Found {len(search_results)} relevant chunks")
+        # 2. Get actual image files from the directory
+        image_dir = os.path.join("/app/storage/images", folder_name)
+        available_images = {}
         
-        # Step 2: Process chunks with LLM
-        chunks_text = []
-        image_paths = []
-        
-        # Process each chunk
-        for i, chunk in enumerate(search_results, 1):
-            # Format chunk text with metadata
-            chunk_text = f"""
-Chunk {i} (Page {chunk['page_num']}):
-{chunk['content']}
-Relevance Score: {chunk['score']}
-            """
-            chunks_text.append(chunk_text)
+        if os.path.exists(image_dir):
+            # Get list of image files sorted by modification time (newest first)
+            image_files = sorted(
+                [f for f in os.listdir(image_dir) if f.endswith('.jpg')],
+                key=lambda x: os.path.getmtime(os.path.join(image_dir, x)),
+                reverse=True
+            )
             
-            # Collect image paths
-            if chunk.get('image_path'):
-                image_paths.append({
-                    'page': chunk['page_num'],
-                    'path': chunk['image_path']
-                })
+            # Map page numbers to actual image files
+            for img_file in image_files:
+                if 'page_1' in img_file:
+                    available_images[1] = img_file
+                elif 'page_2' in img_file:
+                    available_images[2] = img_file
+            
+            logger.info(f"Available images: {available_images}")
+        
+        # 3. Update image paths in search results with actual files
+        for chunk in search_results:
+            page_num = chunk.get('page_num')
+            if page_num and page_num in available_images:
+                actual_image = available_images[page_num]
+                chunk['image_path'] = actual_image
+                # Create URL-safe paths for frontend
+                safe_folder = urllib.parse.quote(folder_name)
+                safe_filename = urllib.parse.quote(actual_image)
+                chunk['image_url'] = f"/images/{safe_folder}/{safe_filename}"
+                logger.info(f"Updated image path for page {page_num}: {chunk['image_url']}")
+        
+        # 4. Prepare chunks text for LLM
+        chunks_text = [f"""
+            Chunk {i}:
+            Content from Page {chunk['page_num']}:
+            {chunk['content']}
+            Relevance Score: {chunk['score']}
+            Image Path: {chunk.get('image_url', 'None')}
+            """ for i, chunk in enumerate(search_results, 1)]
+        
+        # 5. Define system prompt
+        system_prompt = """
+        You are a report generation assistant tasked with producing a well-formatted context given parsed context.
+        You will be given context from one or more reports that take the form of parsed text.
+        You are responsible for producing a report with interleaving text and images.
 
-        # Create LLM prompt
+        Format your response with clear text sections and image references:
+        - Start text sections with [TEXT] and end with [/TEXT]
+        - Reference images with [IMAGE]path/to/image[/IMAGE]
+
+        Requirements:
+        - Include ONLY images from chunks with visual elements (tables, figures, graphs)
+        - You MUST include at least one image block
+        - Use markdown formatting in text blocks
+        - Cite specific chunks when presenting information
+        - Format numerical data clearly
+        """
+        
+        # 6. Define user prompt
         base_prompt = f"""
-Please analyze these text chunks and provide a comprehensive response.
-Include specific references to the content and maintain academic precision.
-
-Context from documents:
-{'-' * 50}
-{'\n'.join(chunks_text)}
-{'-' * 50}
-
-Question/Topic: {query.query}
-
-Please provide:
-1. A concise summary of the main points
-2. Key concepts and their relationships
-3. Relevant quotes or specific references from the text
-4. Any significant conclusions or findings
-
-Detailed Response:
-"""
-
-        # Generate LLM response
+        Analyze these chunks and generate a structured report:
+        
+        {'-' * 50}
+        {'\n'.join(chunks_text)}
+        {'-' * 50}
+        
+        Query: {query.query}
+        
+        Format your response as alternating text and image sections.
+        Use markdown formatting in text sections.
+        Include relevant images for visual content.
+        """
+        
+        # 7. Get LLM response
         llm_response = text_processor.embeddings_client.chat.completions.create(
             model="mistralai/mixtral-8x7b-instruct-v0.1",
             messages=[
-                {"role": "system", "content": "You are a knowledgeable assistant that provides detailed, well-structured analyses of academic content."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": base_prompt}
             ],
             temperature=0.3,
-            max_tokens=1000
+            max_tokens=1500
         )
         
-        # Step 3: Structure the final response
-        response = {
+        # 8. Process LLM response into blocks
+        content = llm_response.choices[0].message.content
+        report_blocks = []
+        
+        # Split content into text and image blocks
+        text_blocks = re.findall(r'\[TEXT\](.*?)\[/TEXT\]', content, re.DOTALL)
+        image_blocks = re.findall(r'\[IMAGE\](.*?)\[/IMAGE\]', content, re.DOTALL)
+        
+        # Process text blocks
+        for text in text_blocks:
+            clean_text = text.strip()
+            # Remove code block markers if present
+            clean_text = re.sub(r'```[a-zA-Z]*\n|```', '', clean_text)
+            report_blocks.append(TextBlock(text=clean_text))
+        
+        # Process image blocks
+        for image_ref in image_blocks:
+            image_ref = image_ref.strip()
+            for chunk in search_results:
+                if chunk.get('image_url') and (
+                    image_ref in chunk['image_url'] or 
+                    image_ref in chunk.get('image_path', '')
+                ):
+                    report_blocks.append(ImageBlock(file_path=chunk['image_url']))
+                    break
+        
+        # Ensure at least one image is included if there are images available
+        if not any(isinstance(block, ImageBlock) for block in report_blocks):
+            for chunk in search_results:
+                if chunk.get('image_url'):
+                    report_blocks.append(ImageBlock(file_path=chunk['image_url']))
+                    break
+        
+        # 9. Create final report
+        report = ReportOutput(blocks=report_blocks)
+        
+        # Log the final report structure for debugging
+        logger.info(f"Final report blocks: {[type(block).__name__ for block in report_blocks]}")
+        logger.info(f"Image blocks: {[block.file_path for block in report_blocks if isinstance(block, ImageBlock)]}")
+        
+        # 10. Return processed results
+        return {
             "status": "success",
-            "query_info": {
-                "original_query": query.query,
+            "report": report.dict(),
+            "metadata": {
+                "query": query.query,
                 "folder_name": folder_name,
-                "chunks_analyzed": len(search_results)
-            },
-            "analysis": {
-                "summary": llm_response.choices[0].message.content,
-                "source_materials": [
-                    {
-                        "chunk_number": i+1,
-                        "page_number": chunk['page_num'],
-                        "content": chunk['content'],
-                        "relevance_score": chunk['score'],
-                        "image_info": {
-                            "available": bool(chunk.get('image_path')),
-                            "path": chunk.get('image_path', None)
-                        }
-                    }
-                    for i, chunk in enumerate(search_results)
-                ],
-                "images": image_paths,
-                "metadata": {
-                    "total_chunks": len(search_results),
-                    "total_images": len(image_paths),
-                    "model_used": "mixtral-8x7b-instruct-v0.1",
-                    "processing_timestamp": datetime.now().isoformat()
-                }
+                "chunks_analyzed": len(search_results),
+                "model_used": "mixtral-8x7b-instruct-v0.1",
+                "processing_timestamp": datetime.now().isoformat()
             }
         }
         
-        return response
+    except Exception as e:
+        logger.error(f"Error in report generation: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error processing report: {str(e)}"
+        )
+
+
+@app.get("/images/{folder_name}/{image_name}")
+async def get_image(folder_name: str, image_name: str):
+    """Serve images from the storage directory."""
+    try:
+        # Construct the image path
+        image_path = os.path.join("/app/storage/images", folder_name, image_name)
+        logger.info(f"Attempting to serve image from path: {image_path}")
+        
+        # Validate path exists
+        if not os.path.exists(image_path):
+            logger.error(f"Image not found: {image_path}")
+            raise HTTPException(status_code=404, detail="Image not found")
+        
+        if not os.path.isfile(image_path):
+            logger.error(f"Path is not a file: {image_path}")
+            raise HTTPException(status_code=400, detail="Invalid image path")
+        
+        # Serve the file
+        return FileResponse(
+            path=image_path,
+            media_type="image/jpeg",
+            filename=image_name
+        )
         
     except Exception as e:
-        logging.error(f"Error in search and process: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing request: {str(e)}"
-        )
+        logger.error(f"Error serving image {folder_name}/{image_name}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))    
+
+@app.get("/debug/check-image/{folder_name}/{image_name}")
+async def check_image_path(folder_name: str, image_name: str):
+    """Debug endpoint to check image paths"""
+    try:
+        image_path = os.path.join("/app/storage/images", folder_name, image_name)
+        return {
+            "requested_path": image_path,
+            "exists": os.path.exists(image_path),
+            "is_file": os.path.isfile(image_path) if os.path.exists(image_path) else False,
+            "parent_exists": os.path.exists(os.path.dirname(image_path)),
+            "parent_contents": os.listdir(os.path.dirname(image_path)) if os.path.exists(os.path.dirname(image_path)) else [],
+            "absolute_path": os.path.abspath(image_path)
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "folder_name": folder_name,
+            "image_name": image_name
+        }
