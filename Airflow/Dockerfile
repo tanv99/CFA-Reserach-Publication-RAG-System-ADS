@@ -2,17 +2,23 @@ FROM apache/airflow:2.10.2
 
 USER root
 
-# Install system dependencies
+# Install system dependencies including NTP
 RUN apt-get update && apt-get install -y \
     chromium \
     chromium-driver \
     xvfb \
+    ntp \
+    ntpdate \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Create directory for Chrome
 RUN mkdir -p /opt/chrome && \
     chmod -R 777 /opt/chrome
+
+# Add time synchronization script
+COPY sync_time.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/sync_time.sh
 
 USER airflow
 
@@ -24,7 +30,12 @@ RUN pip install --no-cache-dir \
     requests \
     PyMuPDF \
     pillow \
-    beautifulsoup4
+    beautifulsoup4 \
+    webdriver_manager \
+    snowflake-connector-python \
+    snowflake-sqlalchemy \
+    cryptography \
+    ntplib
 
 # Set environment variables
 ENV PYTHONPATH=/opt/airflow/dags \
