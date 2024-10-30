@@ -517,7 +517,8 @@ from botocore.exceptions import ClientError
 from PIL import Image
 import io
 from dotenv import load_dotenv
- 
+from llama_index.core.schema import TextNode
+import re
 # Load environment variables
 load_dotenv()
  
@@ -557,7 +558,19 @@ def get_s3_client():
         logger.error(f"Failed to create S3 client: {str(e)}")
         raise
  
- 
+def get_page_number(file_name: str) -> int:
+    """Extract page number from image filename."""
+    match = re.search(r"-page-(\d+)\.jpg$", str(file_name))
+    if match:
+        return int(match.group(1))
+    return 0
+
+def _get_sorted_image_files(image_dir: str) -> List[Path]:
+    """Get image files sorted by page number."""
+    raw_files = [f for f in list(Path(image_dir).iterdir()) if f.is_file()]
+    sorted_files = sorted(raw_files, key=get_page_number)
+    return sorted_files
+
 class PDFProcessor_llama:
     def __init__(self, api_key: str):
         """Initialize LlamaParse with enhanced multimodal configuration"""
@@ -567,47 +580,74 @@ class PDFProcessor_llama:
             use_vendor_multimodal_model=True,
             vendor_multimodal_model_name="anthropic-sonnet-3.5"
         )
-       
+    
+    def get_text_nodes(self, json_dicts: List[Dict], image_dir: Optional[str] = None) -> List[TextNode]:
+        """Create text nodes from parsed PDF content with image metadata."""
+        nodes = []
+        
+        image_files = _get_sorted_image_files(image_dir) if image_dir is not None else None
+        md_texts = [d.get("md", "") for d in json_dicts]
+        
+        for idx, md_text in enumerate(md_texts):
+            chunk_metadata = {"page_num": idx + 1}
+            if image_files is not None and idx < len(image_files):
+                image_file = image_files[idx]
+                chunk_metadata["image_path"] = str(image_file)
+            chunk_metadata["parsed_text_markdown"] = md_text
+            
+            node = TextNode(
+                text="",
+                metadata=chunk_metadata,
+            )
+            nodes.append(node)
+        
+        return nodes
+    
     def process_pdf(self, pdf_path: str, folder_name: str) -> Dict[str, Any]:
-        """Process PDF and extract content using LlamaParse"""
+        """Process PDF and extract content using LlamaParse with indexing"""
         try:
             logger.info(f"Processing PDF: {pdf_path}")
-           
+            
             # First get the markdown content
             logger.info("Getting JSON result...")
             md_json_objs = self.parser.get_json_result(pdf_path)
-           
+            
             # Check if we got valid results
             if not md_json_objs or not isinstance(md_json_objs, list):
                 raise ValueError("Invalid JSON result from parser")
-           
+            
             md_json_list = md_json_objs[0]["pages"]
             logger.info(f"Successfully processed {len(md_json_list)} pages")
-           
+            
             # Create image directory with absolute path
             image_dir = os.path.abspath(os.path.join(IMAGES_DIR, folder_name))
             os.makedirs(image_dir, exist_ok=True)
             logger.info(f"Created image directory at: {image_dir}")
-           
+            
             # Extract images with explicit path
             logger.info("Extracting images...")
             image_dicts = self.parser.get_images(
                 md_json_objs,
                 image_dir
             )
-            logger.info("Found {len(image_dicts) if image_dicts else 0} images")
-           
+            logger.info(f"Found {len(image_dicts) if image_dicts else 0} images")
+            
+            # Create text nodes with image metadata
+            text_nodes = self.get_text_nodes(md_json_list, image_dir)
+            logger.info(f"Created {len(text_nodes)} text nodes")
+            
             # Structure the content
             extracted_content = {
                 "pages": [],
                 "images": [],
+                "nodes": [],
                 "metadata": {
                     "total_pages": len(md_json_list),
                     "file_name": os.path.basename(pdf_path),
                     "extraction_time": datetime.now().isoformat()
                 }
             }
-           
+            
             # Process each page's markdown content
             for page in md_json_list:
                 extracted_content["pages"].append({
@@ -615,7 +655,7 @@ class PDFProcessor_llama:
                     "content": page.get("md", ""),
                     "has_images": bool(page.get("images", []))
                 })
-           
+            
             # Process image information if any images were found
             if image_dicts:
                 for idx, img in enumerate(image_dicts):
@@ -629,13 +669,41 @@ class PDFProcessor_llama:
                         extracted_content["images"].append(image_data)
                     except Exception as e:
                         logger.error(f"Error processing image {idx}: {str(e)}")
-           
+            
+            # Add text nodes information
+            for node in text_nodes:
+                extracted_content["nodes"].append({
+                    "page_num": node.metadata.get("page_num"),
+                    "image_path": node.metadata.get("image_path"),
+                    "content": node.metadata.get("parsed_text_markdown")
+                })
+            
+            # Save the extracted content
+            output_dir = os.path.join(EXTRACTION_DIR, folder_name)
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # Save markdown content
+            markdown_path = os.path.join(output_dir, "extracted_content.md")
+            markdown_content = "\n\n".join(page["content"] for page in extracted_content["pages"])
+            with open(markdown_path, "w", encoding="utf-8") as f:
+                f.write(markdown_content)
+            
+            # Save nodes data
+            nodes_path = os.path.join(output_dir, "text_nodes.json")
+            with open(nodes_path, "w", encoding="utf-8") as f:
+                json.dump([{
+                    "page_num": node.metadata.get("page_num"),
+                    "image_path": node.metadata.get("image_path"),
+                    "content": node.metadata.get("parsed_text_markdown")
+                } for node in text_nodes], f, indent=2)
+            
             return extracted_content
-           
+            
         except Exception as e:
             logger.error(f"Error processing PDF: {str(e)}")
             raise
- 
+        
+        
 # Add this test endpoint to verify paths and processing
 @app.post("/pdfs/{folder_name}/test-extract")
 async def test_extraction(folder_name: str):
@@ -730,14 +798,33 @@ async def test_extraction(folder_name: str):
             "status": "error",
             "detail": str(e)
         }
-################test##################
-# Add these imports to your existing imports
-from fastapi import BackgroundTasks
-from typing import Dict, Any
-import tempfile
- 
-# Add these test endpoints to your FastAPI application
- 
+
+
+@app.post("/pdfs/{folder_name}/get-nodes")
+async def get_pdf_nodes(folder_name: str):
+    """Get text nodes for a processed PDF"""
+    try:
+        nodes_path = os.path.join(EXTRACTION_DIR, folder_name, "text_nodes.json")
+        
+        if not os.path.exists(nodes_path):
+            raise HTTPException(
+                status_code=404,
+                detail="Nodes data not found. Please process the PDF first."
+            )
+        
+        with open(nodes_path, "r", encoding="utf-8") as f:
+            nodes_data = json.load(f)
+        
+        return {
+            "status": "success",
+            "folder_name": folder_name,
+            "total_nodes": len(nodes_data),
+            "nodes": nodes_data
+        }
+        
+    except Exception as e:
+        logger.error(f"Error retrieving nodes: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 ######################Embedding#######################
 from text_processor import TextProcessor  
@@ -893,3 +980,4 @@ async def question_answer(request: QuestionRequest):
     except Exception as e:
         logger.error(f"Error processing QA request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
