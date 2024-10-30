@@ -50,7 +50,9 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.2}
+  # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.2}
+  image: tinchanlkar/bigdata-airflow-3:latest
+
   # build: .
   environment:
     &airflow-common-env
@@ -88,7 +90,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/credentials:/opt/airflow/credentials
-     - /dev/shm:/dev/shm
+    - /dev/shm:/dev/shm
+    - /etc/localtime:/etc/localtime:ro
      
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
@@ -128,10 +131,10 @@ services:
 
   airflow-webserver:
     <<: *airflow-common
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: custom_airflow:latest
+   ## build:
+    ##   context: .
+    ##   dockerfile: Dockerfile
+    ## image: custom_airflow:latest
     command: webserver
     ports:
       - "8080:8080"
@@ -149,10 +152,10 @@ services:
 
   airflow-scheduler:
     <<: *airflow-common
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: custom_airflow:latest
+    ## build:
+    ##   context: .
+    ##   dockerfile: Dockerfile
+    ## image: custom_airflow:latest
     command: scheduler
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
@@ -168,10 +171,10 @@ services:
 
   airflow-worker:
     <<: *airflow-common
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: custom_airflow:latest
+    ## build:
+    ##   context: .
+    ##   dockerfile: Dockerfile
+    ## image: custom_airflow:latest
     command: celery worker
     healthcheck:
       # yamllint disable rule:line-length
@@ -268,8 +271,8 @@ services:
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "${AIRFLOW_UID:-50000}:0"
     # user: "0:0"
-    volumes:
-      - ${AIRFLOW_PROJ_DIR:-.}:/sources
+    ## volumes:
+    ##   - ${AIRFLOW_PROJ_DIR:-.}:/sources
   airflow-cli:
     <<: *airflow-common
     profiles:
