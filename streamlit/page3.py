@@ -27,6 +27,7 @@ def init_session_state():
     if 'extracted_status' not in st.session_state:
         st.session_state.extracted_status = {}
 
+
 def load_css():
     st.markdown("""
         <style>
@@ -77,9 +78,24 @@ def load_css():
                 word-wrap: break-word;
                 line-height: 1.8;
             }
-  '.image-block img { max-width: 100%; height: auto; }',
-    '.image-block .caption { font-size: 0.9rem; color: #6c757d; text-align: center; }',
-    '.metadata-container { font-size: 0.85rem; color: #6c757d; border-top: 1px solid #dee2e6; padding-top: 0.5rem; }',
+            .image-block { 
+                text-align: center; 
+                margin: 2rem 0; 
+                padding: 1rem; 
+                background-color: #f8f9fa; 
+                border-radius: 4px; 
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            }
+            .image-block img { 
+                max-width: 100%; 
+                height: auto; 
+                border-radius: 4px; 
+            }
+            .image-block .caption { 
+                font-size: 0.9rem; 
+                color: #6c757d; 
+                text-align: center; 
+                margin-top: 0.5rem; 
             }
             .metadata-container { 
                 font-size: 0.9rem; 
@@ -96,6 +112,7 @@ def load_css():
             }
         </style>
     """, unsafe_allow_html=True)
+
 
 def display_pdf_viewer(pdf_name: str):
     try:
@@ -182,7 +199,6 @@ def process_query(query: str, folder_name: str, top_k: int = 5):
         st.error(error_msg)
         return None
 
-
 def clean_text_content(text: str) -> str:
     """Clean and format text content from the report."""
     try:
@@ -206,13 +222,37 @@ def clean_text_content(text: str) -> str:
         text = re.sub(r'\*\*\s*', '**', text)  # Fix spacing in bold text
         text = re.sub(r'\_\_\s*', '__', text)  # Fix spacing in underlined text
         
-        # Remove any leading/trailing whitespace
-        text = text.strip()
-        
-        return text
+        return text.strip()
     except Exception as e:
         logger.error(f"Error cleaning text content: {str(e)}")
-        return text  # Return original text if cleaning fails
+        return text
+
+def render_image(image_path: str):
+    """Render an image from a given path."""
+    try:
+        # Construct the full URL for the image
+        image_url = f"{FASTAPI_URL}{image_path}"
+        logger.info(f"Accessing image URL: {image_url}")
+        
+        # Make the request with error handling
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            try:
+                image = Image.open(BytesIO(response.content))
+                st.image(
+                    image,
+                    use_column_width=True,
+                    caption=f"Image from document"
+                )
+            except Exception as img_error:
+                logger.error(f"Error processing image: {str(img_error)}")
+                st.error(f"Error processing image: {str(img_error)}")
+        else:
+            logger.error(f"Failed to load image. Status code: {response.status_code}")
+            st.error(f"Could not load image (Status code: {response.status_code})")
+    except Exception as e:
+        logger.error(f"Error in image rendering: {str(e)}")
+        st.error(f"Error displaying image: {str(e)}")
 
 def render_report_blocks(report_data):
     """Render report blocks with text and images."""
@@ -221,48 +261,29 @@ def render_report_blocks(report_data):
     try:
         for block in report_data["report"]["blocks"]:
             if "text" in block:
-                # Clean and render text block
-                try:
-                    cleaned_text = clean_text_content(block["text"])
-                    st.markdown(
-                        f"<div class='block-container'>{cleaned_text}</div>", 
-                        unsafe_allow_html=True
-                    )
-                except Exception as text_error:
-                    logger.error(f"Error rendering text block: {str(text_error)}")
-                    st.error("Error rendering text content")
+                # Clean the text content
+                cleaned_text = clean_text_content(block["text"])
                 
-            elif "file_path" in block:
-                # Render image block
-                st.markdown("<div class='image-block'>", unsafe_allow_html=True)
-                try:
-                    # Construct the full URL for the image
-                    image_url = f"{FASTAPI_URL}{block['file_path']}"
-                    logger.info(f"Accessing image URL: {image_url}")
-                    
-                    # Make the request with error handling
-                    response = requests.get(image_url)
-                    if response.status_code == 200:
-                        try:
-                            image = Image.open(BytesIO(response.content))
-                            st.image(
-                                image,
-                                use_column_width=True,
-                                caption=f"Image from document"
-                            )
-                        except Exception as img_error:
-                            logger.error(f"Error processing image: {str(img_error)}")
-                            st.error(f"Error processing image: {str(img_error)}")
+                # Split text by image paths
+                parts = re.split(r'(/images/[^\s]+\.jpg)', cleaned_text)
+                
+                for part in parts:
+                    if part.startswith('/images/') and part.endswith('.jpg'):
+                        # This is an image path - render the image
+                        render_image(part)
                     else:
-                        logger.error(f"Failed to load image. Status code: {response.status_code}")
-                        logger.error(f"Response content: {response.text[:200]}")
-                        st.error(f"Could not load image (Status code: {response.status_code})")
-                        
-                except Exception as e:
-                    logger.error(f"Error in image block rendering: {str(e)}")
-                    st.error(f"Error displaying image: {str(e)}")
+                        # This is text content - render as markdown
+                        if part.strip():
+                            st.markdown(
+                                f"<div class='block-container'>{part.strip()}</div>", 
+                                unsafe_allow_html=True
+                            )
                 
-                st.markdown("</div>", unsafe_allow_html=True)
+            # elif "file_path" in block:
+            #     # Render image block
+            #     st.markdown("<div class='image-block'>", unsafe_allow_html=True)
+            #     render_image(block["file_path"])
+            #     st.markdown("</div>", unsafe_allow_html=True)
 
         # Add metadata
         st.markdown("<div class='metadata-container'>", unsafe_allow_html=True)
@@ -278,8 +299,8 @@ def render_report_blocks(report_data):
     except Exception as e:
         logger.error(f"Error rendering report blocks: {str(e)}")
         st.error("Error rendering report content")
-
-
+        
+        
 def ask_question(query: str, folder_name: str, top_k: int = 5):
     try:
         # Check if we need to extract content
