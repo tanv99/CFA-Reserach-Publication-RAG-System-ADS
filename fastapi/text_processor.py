@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import logging
 from tqdm import tqdm
 import time
+import json
 
 # Load environment variables
 load_dotenv()
@@ -40,7 +41,7 @@ class TextProcessor:
 
         # Initialize text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,
+            chunk_size=1000,
             chunk_overlap=50,
             length_function=len,
             separators=["\n\n", "\n", ". ", " ", ""]
@@ -97,51 +98,75 @@ class TextProcessor:
             logger.error(f"Error creating embedding: {str(e)}")
             raise
 
-    def process_and_store(self, text: str, metadata: Dict[str, Any]) -> None:
-        """Process text, create embeddings, and store in Pinecone"""
+    def process_nodes_and_store(self, nodes: List[Dict], pdf_id: str) -> None:
+        """Process PDF nodes and store in Pinecone with complete information"""
         try:
-            # Split text into chunks
-            chunks = self.chunk_text(text)
-            
-            # Process chunks in batches
-            batch_size = 50
-            for i in tqdm(range(0, len(chunks), batch_size)):
-                batch = chunks[i:i + batch_size]
+            vectors = []
+            for node_idx, node in enumerate(nodes):
+                # Log the node structure
+                logger.info(f"Processing node {node_idx}: {json.dumps(node, indent=2)}")
                 
-                # Create embeddings for batch
-                vectors = []
-                for idx, chunk in enumerate(batch):
-                    # Create embedding
+                # Get the content and metadata, with explicit logging
+                content = node.get('content', '')
+                page_num = node.get('page_num')
+                image_path = node.get('image_path')
+                
+                logger.info(f"Node {node_idx} metadata:")
+                logger.info(f"- page_num: {page_num}")
+                logger.info(f"- image_path: {image_path}")
+                
+                # Split content into chunks
+                chunks = self.text_splitter.split_text(content)
+                logger.info(f"Split into {len(chunks)} chunks")
+                
+                for chunk_idx, chunk in enumerate(chunks):
+                    # Create embedding for the chunk
                     embedding = self.create_embedding(chunk, input_type='passage')
                     
+                    # Create structured node information
+                    node_info = {
+                        "page_num": page_num if page_num is not None else "",
+                        "image_path": image_path if image_path is not None else "",
+                        "content": chunk
+                    }
+                    
+                    # Log the node_info being stored
+                    logger.info(f"Storing node_info for chunk {chunk_idx}: {json.dumps(node_info, indent=2)}")
+                    
+                    # Convert node info to JSON string
+                    node_info_str = json.dumps(node_info)
+                    
                     # Prepare metadata
-                    chunk_metadata = {
-                        **metadata,
-                        "chunk_index": i + idx,
-                        "text": chunk
+                    metadata = {
+                        "pdf_id": pdf_id,
+                        "chunk_index": chunk_idx,
+                        "node_index": node_idx,
+                        "text": node_info_str  # Store structured info as JSON string
                     }
                     
                     # Prepare vector
-                    vectors.append((
-                        f"{metadata.get('pdf_id', 'unknown')}_{i + idx}",
-                        embedding,
-                        chunk_metadata
-                    ))
+                    vector_id = f"{pdf_id}_node{node_idx}_chunk{chunk_idx}"
+                    vectors.append((vector_id, embedding, metadata))
+                    
+                    # Process in batches of 50
+                    if len(vectors) >= 50:
+                        self.index.upsert(vectors=vectors)
+                        vectors = []
+                        time.sleep(0.5)  # Rate limiting
                 
-                # Upsert batch to Pinecone
-                self.index.upsert(vectors=vectors)
+                # Upsert any remaining vectors
+                if vectors:
+                    self.index.upsert(vectors=vectors)
                 
-                # Rate limiting
-                time.sleep(0.5)
-            
-            logger.info(f"Successfully processed and stored {len(chunks)} chunks")
+            logger.info(f"Successfully processed and stored nodes for PDF {pdf_id}")
             
         except Exception as e:
-            logger.error(f"Error in process_and_store: {str(e)}")
+            logger.error(f"Error in process_nodes_and_store: {str(e)}")
+            logger.error(f"Exception details: {str(e.__dict__)}")
             raise
 
-    def search_similar(self, query: str, top_k: int = 5) -> List[Dict]:
-        """Search for similar text chunks"""
+    def search_similar(self, query: str, top_k: int = 5, filter_condition: dict = None) -> List[Dict]:
+        """Search for similar text with optional filtering"""
         try:
             # Create query embedding
             query_embedding = self.create_embedding(query, input_type='query')
@@ -150,10 +175,38 @@ class TextProcessor:
             results = self.index.query(
                 vector=query_embedding,
                 top_k=top_k,
+                filter=filter_condition,
                 include_metadata=True
             )
             
-            return results
+            # Format results to include structured node information
+            formatted_results = []
+            for match in results.matches:
+                try:
+                    # Parse the stored JSON string back into a dictionary
+                    node_info = json.loads(match.metadata.get("text", "{}"))
+                    
+                    formatted_results.append({
+                        "score": match.score,
+                        "pdf_id": match.metadata.get("pdf_id"),
+                        "chunk_index": match.metadata.get("chunk_index"),
+                        "page_num": node_info.get("page_num", ""),
+                        "image_path": node_info.get("image_path", ""),
+                        "content": node_info.get("content", "")
+                    })
+                except (json.JSONDecodeError, KeyError) as e:
+                    # Fallback with empty values for missing fields
+                    formatted_results.append({
+                        "score": match.score,
+                        "pdf_id": match.metadata.get("pdf_id"),
+                        "chunk_index": match.metadata.get("chunk_index"),
+                        "page_num": "",
+                        "image_path": "",
+                        "content": match.metadata.get("text", "")
+                    })
+            
+            return formatted_results
+            
         except Exception as e:
             logger.error(f"Error in search_similar: {str(e)}")
             raise
