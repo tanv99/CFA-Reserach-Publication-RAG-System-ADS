@@ -5,6 +5,7 @@ from io import BytesIO
 import os
 from datetime import datetime
 from typing import Dict, Any
+import urllib.parse
 
 # Load environment variables
 FASTAPI_URL = os.getenv("FASTAPI_URL", "http://localhost:8000")
@@ -137,31 +138,44 @@ def fetch_pdfs():
         st.error(f"Failed to load PDF list: {str(e)}")
         return []
 
-def ask_question(query: str, pdf_id: str, top_k: int = 5):
+def ask_question(query: str, folder_name: str, top_k: int = 5):
     """Send question to API and get response"""
     try:
+        # URL encode the folder name to handle special characters
+        encoded_folder_name = urllib.parse.quote(folder_name)
+        
+        # Format the query according to the SearchQuery model
+        search_query = {
+            "query": query,
+            "top_k": top_k,
+            "pdf_id": folder_name  # Add the required pdf_id field
+        }
+        
         response = requests.post(
-            f"{FASTAPI_URL}/pdfs/qa",
-            json={
-                "query": query,
-                "pdf_id": pdf_id,
-                "top_k": top_k,
-                "max_tokens": 1000
-            }
+            f"{FASTAPI_URL}/pdfs/{encoded_folder_name}/search-and-process",
+            json=search_query
         )
+        
+        # If we get a 422 error, log the request details for debugging
+        if response.status_code == 422:
+            st.error(f"Request validation error. Details: {response.text}")
+            return None
+            
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
         st.error(f"Error getting answer: {str(e)}")
+        if hasattr(e.response, 'text'):
+            st.error(f"Response details: {e.response.text}")
         return None
 
 def save_as_notes(answer_data: Dict):
     """Save the current answer as notes"""
     note = {
         "timestamp": datetime.now().isoformat(),
-        "question": answer_data["query"],
-        "answer": answer_data["answer"],
-        "document": answer_data.get("pdf_id", "Unknown"),
+        "question": answer_data.get("query", ""),  # Updated to handle new response structure
+        "answer": answer_data.get("analysis", {}).get("summary", ""),
+        "document": answer_data.get("query_info", {}).get("folder_name", "Unknown"),
     }
     st.session_state.saved_notes.append(note)
     return len(st.session_state.saved_notes)
@@ -208,18 +222,20 @@ def show():
             )
         
         with col2:
-            # num_chunks = st.number_input(
-            #     "Chunks",
-            #     min_value=1,
-            #     max_value=10,
-            #     value=5
-            # )
+            top_k = st.number_input(
+                "Results",
+                min_value=1,
+                max_value=10,
+                value=5,
+                help="Number of relevant chunks to analyze"
+            )
 
             if st.button("Ask", use_container_width=True):
                 if question:
-                    with st.spinner("Getting answer..."):
-                        result = ask_question(question, selected_pdf, 5)
-                        st.session_state.current_answer = result
+                    with st.spinner("Analyzing document..."):
+                        result = ask_question(question, selected_pdf, top_k)
+                        if result:  # Only update if we got a valid response
+                            st.session_state.current_answer = result
         
         # Display answer if available
         if st.session_state.current_answer:
@@ -227,8 +243,8 @@ def show():
             if result and result.get("status") == "success":
                 # Display answer
                 st.markdown("<div class='answer-container'>", unsafe_allow_html=True)
-                st.markdown("### Answer")
-                st.write(result["answer"])
+                st.markdown("### Analysis")
+                st.write(result["analysis"]["summary"])
                 
                 # Save as Notes button
                 if st.button("Save as Notes", use_container_width=True):
@@ -237,15 +253,30 @@ def show():
                 st.markdown("</div>", unsafe_allow_html=True)
                 
                 # Display supporting evidence
-                with st.expander("View Supporting Evidence"):
-                    for chunk in result["supporting_evidence"]["chunks"]:
+                with st.expander("View Source Materials"):
+                    for chunk in result["analysis"]["source_materials"]:
                         st.markdown("<div class='evidence-container'>", unsafe_allow_html=True)
-                        score = round(chunk["relevance_score"], 3)
-                        st.markdown(f"<span class='score-badge'>Relevance: {score}</span>", 
+                        st.markdown(f"<span class='score-badge'>Relevance: {chunk['relevance_score']:.3f}</span>", 
                                   unsafe_allow_html=True)
-                        st.markdown("**Text:**")
-                        st.write(chunk["text"])
+                        st.markdown(f"**Page {chunk['page_number']}**")
+                        st.write(chunk['content'])
+                        
+                        # Display image if available
+                        if chunk['image_info']['available']:
+                            try:
+                                st.image(chunk['image_info']['path'], 
+                                       caption=f"Related image from page {chunk['page_number']}")
+                            except Exception as e:
+                                st.warning(f"Could not load image: {chunk['image_info']['path']}")
                         st.markdown("</div>", unsafe_allow_html=True)
+                
+                # Display metadata
+                with st.expander("Analysis Details"):
+                    st.json({
+                        "Processing Time": result["analysis"]["metadata"]["processing_timestamp"],
+                        "Model Used": result["analysis"]["metadata"]["model_used"],
+                        "Chunks Analyzed": result["analysis"]["metadata"]["total_chunks"]
+                    })
         
         st.markdown("</div>", unsafe_allow_html=True)
 
