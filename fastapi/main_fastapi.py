@@ -827,42 +827,42 @@ async def get_pdf_nodes(folder_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 ######################Embedding#######################
-from text_processor import TextProcessor  
+from text_processor import TextProcessor
+
 text_processor = TextProcessor()
 class SearchQuery(BaseModel):
     query: str
     top_k: Optional[int] = 5
+    pdf_id: str
  
 @app.post("/pdfs/{folder_name}/process-embeddings")
 async def process_pdf_embeddings(folder_name: str):
-    """Process PDF content and store embeddings"""
+    """Process PDF nodes and store embeddings"""
     try:
-        # Get markdown content from previous extraction using os.path.join
-        markdown_path = os.path.join(EXTRACTION_DIR, folder_name, "extracted_content.md")
+        # Get nodes data
+        nodes_path = os.path.join(EXTRACTION_DIR, folder_name, "text_nodes.json")
         
-        if not os.path.exists(markdown_path):
+        if not os.path.exists(nodes_path):
             raise HTTPException(
                 status_code=404,
-                detail="Markdown content not found. Please process the PDF first."
+                detail="Nodes data not found. Please process the PDF first."
             )
         
-        # Read markdown content
-        with open(markdown_path, "r", encoding="utf-8") as f:
-            content = f.read()
+        # Read nodes data
+        with open(nodes_path, "r", encoding="utf-8") as f:
+            nodes_data = json.load(f)
+            
+        # Log the structure of first node for debugging
+        if nodes_data and len(nodes_data) > 0:
+            logger.info(f"Sample node structure: {json.dumps(nodes_data[0], indent=2)}")
         
-        # Create metadata
-        metadata = {
-            "pdf_id": folder_name,
-            "source": "pdf",
-            "processed_date": datetime.now().isoformat()
-        }
-        
-        # Process and store embeddings
-        text_processor.process_and_store(content, metadata)
+        # Process and store nodes
+        text_processor.process_nodes_and_store(nodes_data, folder_name)
         
         return {
             "status": "success",
-            "message": f"Successfully processed and stored embeddings for {folder_name}"
+            "message": f"Successfully processed and stored embeddings for {folder_name}",
+            "total_nodes": len(nodes_data)
         }
         
     except Exception as e:
@@ -893,54 +893,27 @@ def get_image_info(folder_name: str):
         raise HTTPException(status_code=500, detail=str(e))
     
     
-@app.post("/pdfs/search")
-async def search_pdfs(query: SearchQuery):
-    """Search through PDF content using embeddings"""
+@app.post("/pdfs/{folder_name}/search")
+async def search_pdfs(folder_name: str, query: SearchQuery):
+    """Search through specific PDF content using embeddings"""
     try:
-        results = text_processor.search_similar(query.query, query.top_k)
-       
-        # Format results
-        formatted_results = []
-        for match in results.matches:
-            formatted_results.append({
-                "score": match.score,
-                "pdf_id": match.metadata.get("pdf_id"),
-                "chunk_index": match.metadata.get("chunk_index"),
-                "text": match.metadata.get("text")
-            })
-       
-        return {
-            "query": query.query,
-            "results": formatted_results
-        }
-       
-    except Exception as e:
-        logger.error(f"Error searching PDFs: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/pdfs/search")
-async def search_pdfs(query: SearchQuery):
-    """Search through PDF content using embeddings"""
-    try:
-        results = text_processor.search_similar(query.query, query.top_k)
+        # Create filter for specific PDF
+        filter_condition = {"pdf_id": folder_name}
         
-        # Format results
-        formatted_results = []
-        for match in results.matches:
-            formatted_results.append({
-                "score": match.score,
-                "pdf_id": match.metadata.get("pdf_id"),
-                "chunk_index": match.metadata.get("chunk_index"),
-                "text": match.metadata.get("text")
-            })
+        # Get search results with filter
+        results = text_processor.search_similar(
+            query.query, 
+            query.top_k,
+            filter_condition=filter_condition
+        )
         
         return {
             "query": query.query,
-            "results": formatted_results
+            "results": results
         }
         
     except Exception as e:
-        logger.error(f"Error searching PDFs: {str(e)}")
+        logger.error(f"Error searching PDF {folder_name}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 class QuestionRequest(BaseModel):
@@ -957,22 +930,37 @@ async def question_answer(request: QuestionRequest):
             top_k=request.top_k
         )
         
+        # Format supporting chunks with complete node information
+        formatted_chunks = []
+        for chunk in result["supporting_chunks"]:
+            try:
+                node_info = json.loads(chunk["metadata"]["text"])
+                formatted_chunks.append({
+                    "score": chunk["score"],
+                    "page_num": node_info["page_num"],
+                    "image_path": node_info["image_path"],
+                    "content": node_info["content"],
+                    "source": {
+                        "pdf_id": chunk["metadata"].get("pdf_id"),
+                        "chunk_index": chunk["metadata"].get("chunk_index")
+                    }
+                })
+            except json.JSONDecodeError:
+                formatted_chunks.append({
+                    "text": chunk["metadata"]["text"],
+                    "relevance_score": chunk["score"],
+                    "source": {
+                        "pdf_id": chunk["metadata"].get("pdf_id"),
+                        "chunk_index": chunk["metadata"].get("chunk_index")
+                    }
+                })
+        
         return {
             "status": "success",
             "query": request.query,
             "answer": result["answer"],
             "supporting_evidence": {
-                "chunks": [
-                    {
-                        "text": chunk["metadata"]["text"],
-                        "relevance_score": chunk["score"],
-                        "source": {
-                            "pdf_id": chunk["metadata"].get("pdf_id"),
-                            "chunk_index": chunk["metadata"].get("chunk_index")
-                        }
-                    }
-                    for chunk in result["supporting_chunks"]
-                ],
+                "chunks": formatted_chunks,
                 "total_chunks": result["total_chunks"]
             }
         }
@@ -980,4 +968,3 @@ async def question_answer(request: QuestionRequest):
     except Exception as e:
         logger.error(f"Error processing QA request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-    
