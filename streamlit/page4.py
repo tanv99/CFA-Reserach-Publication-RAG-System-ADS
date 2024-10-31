@@ -1,5 +1,3 @@
-# pages/page4.py
-
 import streamlit as st
 import requests
 import logging
@@ -16,10 +14,14 @@ def init_page_state():
     """Initialize session state variables for the page"""
     if 'selected_document' not in st.session_state:
         st.session_state.selected_document = None
+    if 'selected_note' not in st.session_state:
+        st.session_state.selected_note = None
     if 'current_notes' not in st.session_state:
         st.session_state.current_notes = []
     if 'sort_order' not in st.session_state:
         st.session_state.sort_order = "Newest First"
+    if 'question' not in st.session_state:
+        st.session_state.question = ""
 
 def fetch_pdfs() -> List[Dict]:
     """Fetch list of available PDFs"""
@@ -54,13 +56,25 @@ def fetch_document_notes(document_id: str) -> List[Dict]:
         return []
 
 def format_timestamp(timestamp: str) -> str:
-    """Format ISO timestamp to readable date/time"""
+    """Format timestamp to readable date/time with fallback"""
+    if not timestamp:
+        return "No date available"
+    
     try:
+        # Try parsing as ISO format
         dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
         return dt.strftime("%B %d, %Y %I:%M %p")
-    except Exception as e:
-        logger.error(f"Error formatting timestamp: {str(e)}")
-        return timestamp
+    except ValueError:
+        try:
+            # Try parsing as Unix timestamp if it's a number
+            if timestamp.isdigit():
+                dt = datetime.fromtimestamp(int(timestamp))
+                return dt.strftime("%B %d, %Y %I:%M %p")
+        except:
+            pass
+        
+        # If all parsing fails, return the original string
+        return str(timestamp)
 
 def render_image(image_path: str):
     """Render an image from a given path"""
@@ -103,12 +117,13 @@ def render_note_card(note: Dict):
                 </style>
             """, unsafe_allow_html=True)
             
-            # Note header
+            # Note header with note_id
             st.markdown(f"""
                 <div class="note-card">
                     <div class="note-metadata">
-                        📝 Created: {format_timestamp(note['timestamp'])}<br>
-                        🔍 Query: "{note['query']}"
+                        <strong>Note ID: {note.get('note_id', 'Unknown')}</strong><br>
+                        📝 Created: {format_timestamp(note.get('timestamp', ''))}<br>
+                        🔍 Query: "{note.get('query', 'No query available')}"
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -122,14 +137,37 @@ def render_note_card(note: Dict):
                 
                 # Display images if available
                 if note.get('image_paths'):
-                    st.markdown("### Related Images")
                     for image_path in note['image_paths']:
                         render_image(image_path)
-                
+            
             st.markdown("---")
     except Exception as e:
         logger.error(f"Error rendering note card: {str(e)}")
         st.error("Error displaying note")
+
+def sort_notes(notes: List[Dict], sort_order: str) -> List[Dict]:
+    """Sort notes by timestamp with error handling"""
+    try:
+        def get_sort_key(note):
+            timestamp = note.get('timestamp', '')
+            try:
+                return datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            except ValueError:
+                try:
+                    if str(timestamp).isdigit():
+                        return datetime.fromtimestamp(int(timestamp))
+                except:
+                    pass
+                return datetime.min  # Fallback for invalid dates
+        
+        return sorted(
+            notes,
+            key=get_sort_key,
+            reverse=(sort_order == "Newest First")
+        )
+    except Exception as e:
+        logger.error(f"Error sorting notes: {str(e)}")
+        return notes
 
 def show():
     """Main function to display the research notes page"""
@@ -142,17 +180,17 @@ def show():
         # Add description
         st.markdown("""
             View and manage your saved research notes for each document.
-            Select a document to see its associated notes.
+            Select a document and a specific research note to view its content.
         """)
         
-        # Create two columns for document selection and filters
-        col1, col2 = st.columns([2, 1])
+        # Create three columns for document selection, note selection, and filters
+        col1, col2, col3 = st.columns([2, 2, 1])
         
         with col1:
             # Document selector
             pdfs = fetch_pdfs()
             if pdfs:
-                options = [""] + [pdf['title'] for pdf in pdfs]
+                options = ["Select a document"] + [pdf['title'] for pdf in pdfs]
                 selected_doc = st.selectbox(
                     "Select a document",
                     options=options,
@@ -160,41 +198,78 @@ def show():
                     key="notes_doc_selector"
                 )
                 
-                if selected_doc:
+                if selected_doc != "Select a document":
                     st.session_state.selected_document = selected_doc
+                else:
+                    st.session_state.selected_document = None
             else:
                 st.warning("No documents available")
                 return
         
-        with col2:
-            # Sort order selector
-            st.session_state.sort_order = st.selectbox(
-                "Sort by",
-                ["Newest First", "Oldest First"],
-                key="notes_sort_order"
-            )
-        
-        # Display notes if document is selected
+        # Only show note selection and content if a document is selected
         if st.session_state.selected_document:
-            # Fetch notes
             notes = fetch_document_notes(st.session_state.selected_document)
             
-            if not notes:
+            if notes:
+                with col2:
+                    # Create note options using note_ids
+                    note_options = ["Select a note", "ALL"] + [
+                        note.get('note_id', f"note_{st.session_state.selected_document}_{idx}")
+                        for idx, note in enumerate(notes)
+                    ]
+                    selected_note = st.selectbox(
+                        "Select research note",
+                        options=note_options,
+                        key="note_selector"
+                    )
+                    if selected_note != "Select a note":
+                        st.session_state.selected_note = selected_note
+                    else:
+                        st.session_state.selected_note = None
+                
+                with col3:
+                    # Sort order selector
+                    st.session_state.sort_order = st.selectbox(
+                        "Sort by",
+                        ["Newest First", "Oldest First"],
+                        key="notes_sort_order"
+                    )
+                
+                # Only display notes if both document and note are selected
+                if st.session_state.selected_note:
+                    # Sort notes with error handling
+                    sorted_notes = sort_notes(notes, st.session_state.sort_order)
+                    
+                    if st.session_state.selected_note == "ALL":
+                        for note in sorted_notes:
+                            render_note_card(note)
+                    else:
+                        # Find the specific note by note_id
+                        selected_note_data = next(
+                            (note for note in sorted_notes if note.get('note_id') == st.session_state.selected_note),
+                            None
+                        )
+                        if selected_note_data:
+                            render_note_card(selected_note_data)
+                        else:
+                            st.error("Selected note not found")
+                    
+                    # Question input section
+                    st.markdown("### Ask a Question")
+                    col1, col2 = st.columns([4, 1])
+                    with col1:
+                        question = st.text_input(
+                            "Enter your question about this document:",
+                            key="question",
+                            placeholder="Type your question here..."
+                        )
+                    with col2:
+                        st.markdown("<br>", unsafe_allow_html=True)  # Add spacing to align with text input
+                        if st.button("Submit Question"):
+                            submit_question()
+                
+            else:
                 st.info(f"No research notes found for {st.session_state.selected_document}")
-                return
-            
-            # Sort notes
-            notes.sort(
-                key=lambda x: datetime.fromisoformat(x["timestamp"].replace('Z', '+00:00')),
-                reverse=(st.session_state.sort_order == "Newest First")
-            )
-            
-            # Display total count
-            st.markdown(f"### Found {len(notes)} notes")
-            
-            # Display notes
-            for note in notes:
-                render_note_card(note)
                 
     except Exception as e:
         logger.error(f"Error in research notes page: {str(e)}")
