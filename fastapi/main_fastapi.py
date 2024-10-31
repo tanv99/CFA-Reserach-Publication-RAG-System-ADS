@@ -1044,9 +1044,9 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
 
         Requirements:
         - Include ONLY images from chunks with visual elements (tables, figures, graphs)
+        - Avoid mentioning chunk numbers in your responses. Use only page numbers for any citations or references to images, text, tables, or graphs
         - You MUST include at least one image block
         - Use markdown formatting in text blocks
-        - Cite specific chunks when presenting information
         - Format numerical data clearly
         """
         
