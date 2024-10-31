@@ -316,28 +316,108 @@ def ask_question(query: str, folder_name: str, top_k: int = 5):
         st.error(f"Error processing request: {str(e)}")
         return None
 
-def save_as_notes(report_data: Dict):
-    # Extract clean text without technical details
-    text_blocks = []
-    for block in report_data["report"]["blocks"]:
-        if "text" in block:
-            text_content = block["text"]
-            if "Report:" in text_content and "Tool Call:" in text_content:
-                text_content = text_content.split("Report:")[1].split("Tool Call:")[0]
-            text_content = text_content.replace("---", "").strip()
-            text_content = re.sub(r'\(Chunk \d+\)', '', text_content)
-            text_content = re.sub(r'\(Figure \d+\)', '', text_content)
-            text_blocks.append(text_content)
+def clean_text_content(text: str) -> str:
+    """Clean and format text content from the report."""
+    try:
+        # Remove code block markers
+        text = re.sub(r'```[a-zA-Z]*\n|```', '', text)
+        
+        # Remove specific markers
+        text = re.sub(r'\[TEXT\]|\[/TEXT\]|\[IMAGE\]|\[/IMAGE\]', '', text)
+        
+        # Remove chunk references
+        text = re.sub(r'\(Chunk \d+\)', '', text)
+        
+        # Clean up multiple newlines
+        text = re.sub(r'\n\s*\n', '\n\n', text)
+        
+        return text.strip()
+    except Exception as e:
+        logger.error(f"Error cleaning text: {str(e)}")
+        return text
 
-    note = {
-        "timestamp": datetime.now().isoformat(),
-        "query": report_data["metadata"]["query"],
-        "document": report_data["metadata"]["folder_name"],
-        "text_blocks": text_blocks,
-        "image_paths": [block["file_path"] for block in report_data["report"]["blocks"] if "file_path" in block]
-    }
-    st.session_state.saved_notes.append(note)
-    return len(st.session_state.saved_notes)
+def save_as_notes(report_data: Dict) -> bool:
+    """Save the current report as a research note"""
+    try:
+        with st.status("Saving research note...", expanded=True) as status:
+            # Extract and clean text content
+            text_blocks = []
+            image_paths = []
+            
+            try:
+                # Process each block in the report
+                for block in report_data["report"]["blocks"]:
+                    if "text" in block:
+                        cleaned_text = clean_text_content(block["text"])
+                        if cleaned_text:
+                            text_blocks.append(cleaned_text)
+                    elif "file_path" in block:
+                        if block["file_path"]:
+                            image_paths.append(block["file_path"])
+                
+                if not text_blocks:
+                    status.update(label="Error: No text content to save", state="error")
+                    return False
+                
+                # Prepare note data
+                note_data = {
+                    "timestamp": datetime.now().isoformat(),
+                    "query": report_data["metadata"]["query"],
+                    "text_blocks": text_blocks,
+                    "image_paths": image_paths
+                }
+                
+                # Log the API endpoint and data being sent
+                api_endpoint = f"{FASTAPI_URL}/pdfs/{report_data['metadata']['folder_name']}/save-note"
+                logger.info(f"Sending request to: {api_endpoint}")
+                logger.info(f"Note data: {json.dumps(note_data, indent=2)}")
+                
+                # Make the API request
+                response = requests.post(
+                    api_endpoint,
+                    json=note_data,
+                    timeout=30  # Add timeout
+                )
+                
+                # Check response
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get("status") == "success":
+                        status.update(label="Research note saved successfully!", state="complete")
+                        # Show success message with note details
+                        st.success(f"""
+                        Research note saved successfully!
+                        - Query: {note_data['query']}
+                        - Text blocks: {len(text_blocks)}
+                        - Images: {len(image_paths)}
+                        """)
+                        return True
+                    else:
+                        error_msg = result.get("detail", "Unknown error occurred")
+                        status.update(label=f"Error: {error_msg}", state="error")
+                        st.error(f"Failed to save note: {error_msg}")
+                        return False
+                else:
+                    error_msg = f"Server error: {response.status_code}"
+                    try:
+                        error_detail = response.json().get("detail", "No detail provided")
+                        error_msg = f"{error_msg} - {error_detail}"
+                    except:
+                        pass
+                    status.update(label=f"Error: {error_msg}", state="error")
+                    st.error(f"Failed to save note: {error_msg}")
+                    return False
+                    
+            except requests.RequestException as e:
+                error_msg = f"Network error: {str(e)}"
+                status.update(label=f"Error: {error_msg}", state="error")
+                st.error(f"Failed to save note: {error_msg}")
+                return False
+                
+    except Exception as e:
+        logger.error(f"Error saving notes: {str(e)}")
+        st.error(f"Error saving notes: {str(e)}")
+        return False
 
 def fetch_pdfs():
     try:

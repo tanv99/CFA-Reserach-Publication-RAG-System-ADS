@@ -5,7 +5,7 @@ import json
 from botocore.exceptions import ClientError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, constr, validator
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import io
 from dotenv import load_dotenv
 import jwt
@@ -21,8 +21,6 @@ from pathlib import Path
 from pdf_processor import PDFProcessor
 import requests
 from openai import OpenAI
-from typing import Any
- 
  
 # Load environment variables
 load_dotenv()
@@ -1184,3 +1182,63 @@ async def check_image_path(folder_name: str, image_name: str):
             "folder_name": folder_name,
             "image_name": image_name
         }
+    
+#################### Reasearch notes############################
+
+
+class SaveNoteRequest(BaseModel):
+    timestamp: str
+    query: str
+    text_blocks: List[str]
+    image_paths: List[str]
+
+@app.post("/pdfs/{folder_name}/save-note")
+async def save_note(folder_name: str, note_data: SaveNoteRequest):
+    """Save a research note for a document"""
+    try:
+        # Validate the request data
+        if not note_data.text_blocks:
+            raise HTTPException(
+                status_code=400,
+                detail="No text content provided"
+            )
+            
+        # Create a sanitized version of the note data
+        clean_note = {
+            "timestamp": note_data.timestamp,
+            "query": note_data.query,
+            "text_blocks": [block for block in note_data.text_blocks if block.strip()],
+            "image_paths": [path for path in note_data.image_paths if path.strip()]
+        }
+        
+        # Save note to Pinecone
+        note_id = text_processor.save_research_note(folder_name, clean_note)
+        
+        return {
+            "status": "success",
+            "note_id": note_id,
+            "message": "Research note saved successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error saving note: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error saving note: {str(e)}"
+        )
+
+@app.get("/pdfs/{folder_name}/notes")
+async def get_notes(folder_name: str):
+    """Get all research notes for a document"""
+    try:
+        notes = text_processor.get_research_notes(folder_name)
+        return {
+            "status": "success",
+            "notes": notes
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving notes: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving notes: {str(e)}"
+        )
