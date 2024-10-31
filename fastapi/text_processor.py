@@ -41,7 +41,7 @@ class TextProcessor:
 
         # Initialize text splitter
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
+            chunk_size=500,
             chunk_overlap=50,
             length_function=len,
             separators=["\n\n", "\n", ". ", " ", ""]
@@ -276,5 +276,90 @@ class TextProcessor:
             logger.error(f"Error in search and answer: {str(e)}")
             raise
 
+    def save_research_note(self, document_id: str, note_data: Dict) -> str:
+        """Save a research note to Pinecone"""
+        try:
+            # Create a unique ID for the research note
+            note_id = f"note_{document_id}_{int(time.time())}"
+            
+            # Format the note text combining all text blocks
+            note_text = "\n\n".join(note_data["text_blocks"])
+            
+            # Create embedding for the note text
+            try:
+                note_embedding = self.create_embedding(note_text, input_type='passage')
+            except Exception as e:
+                logger.error(f"Error creating embedding for note: {str(e)}")
+                raise Exception(f"Failed to create embedding: {str(e)}")
+            
+            # Prepare metadata
+            metadata = {
+                "pdf_id": document_id,
+                "type": "research_note",
+                "query": note_data["query"],
+                "timestamp": note_data["timestamp"],
+                "text": json.dumps({
+                    "content": note_text,
+                    "image_paths": note_data["image_paths"]
+                })
+            }
+            
+            # Store in Pinecone with retry logic
+            max_retries = 3
+            retry_delay = 2
+            
+            for attempt in range(max_retries):
+                try:
+                    self.index.upsert(
+                        vectors=[(note_id, note_embedding, metadata)]
+                    )
+                    logger.info(f"Saved research note {note_id} for document {document_id}")
+                    return note_id
+                except Exception as e:
+                    logger.error(f"Attempt {attempt + 1} to save note failed: {str(e)}")
+                    if attempt < max_retries - 1:
+                        time.sleep(retry_delay)
+                        retry_delay *= 2
+                    else:
+                        raise Exception(f"Failed to save note after {max_retries} attempts: {str(e)}")
+                    
+        except Exception as e:
+            logger.error(f"Error saving research note: {str(e)}")
+            raise
+
+    def get_research_notes(self, document_id: str) -> List[Dict]:
+        """Retrieve all research notes for a document"""
+        try:
+            # Query Pinecone for research notes
+            results = self.index.query(
+                vector=[0] * 1024,  # Dummy vector since we're only using filters
+                filter={
+                    "pdf_id": document_id,
+                    "type": "research_note"
+                },
+                top_k=100,  # Adjust based on expected number of notes
+                include_metadata=True
+            )
+            
+            # Format results
+            notes = []
+            for match in results.matches:
+                try:
+                    note_content = json.loads(match.metadata.get("text", "{}"))
+                    notes.append({
+                        "note_id": match.id,
+                        "query": match.metadata.get("query"),
+                        "timestamp": match.metadata.get("timestamp"),
+                        "content": note_content.get("content", ""),
+                        "image_paths": note_content.get("image_paths", [])
+                    })
+                except json.JSONDecodeError:
+                    logger.error(f"Error parsing note content for {match.id}")
+                    
+            return sorted(notes, key=lambda x: x["timestamp"], reverse=True)
+            
+        except Exception as e:
+            logger.error(f"Error retrieving research notes: {str(e)}")
+            raise
 # Export the class
 __all__ = ['TextProcessor']
