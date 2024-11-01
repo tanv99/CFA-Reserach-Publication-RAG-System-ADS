@@ -105,7 +105,8 @@ Airflow: Airflow/.env
 FastAPI: fastapi/.env
 Streamlit: streamlit/.env
 
-### Step 1: Clone the Repository
+### Steps to run the application
+1. Step 1: Clone the Repository
 If you haven’t done so already, clone the repository to your local machine:
 
 ```bash
