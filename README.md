@@ -91,6 +91,7 @@ ASSIGNMENT-3/
     ├── page4.py
     ├── poetry.lock
     └── pyproject.toml
+```
 
 ### Prerequisites
 - Docker and Docker Compose
@@ -104,7 +105,8 @@ Airflow: Airflow/.env
 FastAPI: fastapi/.env
 Streamlit: streamlit/.env
 
-### Step 1: Clone the Repository
+### Steps to run the application
+1. Step 1: Clone the Repository
 If you haven’t done so already, clone the repository to your local machine:
 
 ```bash
@@ -131,6 +133,16 @@ Access the Airflow UI at http://localhost:8080
 docker compose up --build -d
 FastAPI should now be accessible at http://localhost:8501
 
+### Contributions
+
+| Name                            | Percentage Contribution |
+| ------------------------------- | ----------------------- |
+| Sarthak Somvanshi               | 33.33% (User login, Q/A System, Report Generation)                    |
+| Yuga Kanse                      | 33.33%  (Summary Generation, Search & Research note indexing functionality)                  |
+| Tanvi Inchanalkar               | 33.33% (Airflow Pipelines-AWS & Snowflake, GCP Deployment, Documentation)                   |
+
+### Additional Notes
+WE ATTEST THAT WE HAVEN’T USED ANY OTHER STUDENTS’ WORK IN OUR ASSIGNMENT AND ABIDE BY THE POLICIES LISTED IN THE STUDENT HANDBOOK. 
 
 
 
