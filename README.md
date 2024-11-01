@@ -125,18 +125,6 @@ cd Assignment-3
 
 - docker ps
 
-**Step 2: Initialize Airflow**
-   
- - cd Airflow
- 
-- docker compose up airflow-init
-
-- docker compose up -d
-
-- docker ps
-
-- Access the Airflow UI at http://localhost:8080
-
 **Step 3: Running Application:**
    
 - docker compose up --build -d
