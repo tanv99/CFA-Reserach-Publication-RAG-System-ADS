@@ -31,84 +31,14 @@ def init_session_state():
 def load_css():
     st.markdown("""
         <style>
-            .doc-selector { 
-                background-color: #ffffff; 
-                padding: 1.5rem; 
-                border-radius: 8px; 
-                margin: 1rem auto; 
-                max-width: 800px; 
-                border: 1px solid #e9ecef; 
+            .pdf-container {
+                margin: 2rem 0;
             }
-            .pdf-container { 
-                width: 100%; 
-                max-width: 800px; 
-                margin: 1rem auto; 
-                background: white; 
-                padding: 20px; 
-                border-radius: 8px; 
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            }
-            .pdf-viewer { 
-                width: 100%; 
-                height: 800px; 
-                border: none; 
-                border-radius: 4px; 
-            }
-            .qa-container { 
-                background-color: #f8f9fa; 
-                padding: 1.5rem; 
-                border-radius: 8px; 
-                margin: 1rem auto; 
-                max-width: 800px; 
-            }
-            .report-container { 
-                background-color: #ffffff; 
-                padding: 2rem; 
-                border-radius: 8px; 
-                margin: 1rem 0; 
-                border: 1px solid #e9ecef;
-                line-height: 1.6;
-            }
-            .block-container { 
-                margin: 1rem 0; 
-                padding: 1rem; 
-                border-radius: 4px; 
-                background-color: #f8f9fa; 
-                white-space: pre-wrap; 
-                word-wrap: break-word;
-                line-height: 1.8;
-            }
-            .image-block { 
-                text-align: center; 
-                margin: 2rem 0; 
-                padding: 1rem; 
-                background-color: #f8f9fa; 
-                border-radius: 4px; 
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            }
-            .image-block img { 
-                max-width: 100%; 
-                height: auto; 
-                border-radius: 4px; 
-            }
-            .image-block .caption { 
-                font-size: 0.9rem; 
-                color: #6c757d; 
-                text-align: center; 
-                margin-top: 0.5rem; 
-            }
-            .metadata-container { 
-                font-size: 0.9rem; 
-                color: #6c757d; 
-                margin-top: 1rem; 
-                padding: 0.5rem; 
-                text-align: right;
-                border-top: 1px solid #e9ecef;
-            }
-            iframe { 
-                border: none !important; 
-                width: 100% !important; 
-                height: 800px !important; 
+            
+            .pdf-viewer {
+                width: 100%;
+                height: 800px;
+                border: none;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -256,46 +186,30 @@ def render_image(image_path: str):
 
 def render_report_blocks(report_data):
     """Render report blocks with text and images."""
-    st.markdown("<div class='report-container'>", unsafe_allow_html=True)
-    
     try:
+        # Display metadata
+        timestamp = datetime.fromisoformat(report_data['metadata']['processing_timestamp'])
+        st.markdown(f"""
+            Generated: {timestamp.strftime('%Y-%m-%d %H:%M:%S')} | 
+            Model: {report_data['metadata']['model_used']}
+        """)
+        
+        # Render content blocks
         for block in report_data["report"]["blocks"]:
             if "text" in block:
-                # Clean the text content
                 cleaned_text = clean_text_content(block["text"])
-                
-                # Split text by image paths
                 parts = re.split(r'(/images/[^\s]+\.jpg)', cleaned_text)
                 
                 for part in parts:
                     if part.startswith('/images/') and part.endswith('.jpg'):
-                        # This is an image path - render the image
                         render_image(part)
                     else:
-                        # This is text content - render as markdown
                         if part.strip():
-                            st.markdown(
-                                f"<div class='block-container'>{part.strip()}</div>", 
-                                unsafe_allow_html=True
-                            )
+                            st.markdown(part.strip())
+            
+            elif "file_path" in block:
+                render_image(block["file_path"])
                 
-            # elif "file_path" in block:
-            #     # Render image block
-            #     st.markdown("<div class='image-block'>", unsafe_allow_html=True)
-            #     render_image(block["file_path"])
-            #     st.markdown("</div>", unsafe_allow_html=True)
-
-        # Add metadata
-        st.markdown("<div class='metadata-container'>", unsafe_allow_html=True)
-        timestamp = datetime.fromisoformat(report_data['metadata']['processing_timestamp'])
-        st.markdown(
-            f"Generated: {timestamp.strftime('%Y-%m-%d %H:%M:%S')} | "
-            f"Chunks analyzed: {report_data['metadata']['chunks_analyzed']} | "
-            f"Model: {report_data['metadata']['model_used']}", 
-            unsafe_allow_html=True
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
-        
     except Exception as e:
         logger.error(f"Error rendering report blocks: {str(e)}")
         st.error("Error rendering report content")
@@ -339,81 +253,75 @@ def clean_text_content(text: str) -> str:
 def save_as_notes(report_data: Dict) -> bool:
     """Save the current report as a research note"""
     try:
-        with st.status("Saving research note...", expanded=True) as status:
-            # Extract and clean text content
-            text_blocks = []
-            image_paths = []
-            
-            try:
-                # Process each block in the report
-                for block in report_data["report"]["blocks"]:
-                    if "text" in block:
-                        cleaned_text = clean_text_content(block["text"])
-                        if cleaned_text:
-                            text_blocks.append(cleaned_text)
-                    elif "file_path" in block:
-                        if block["file_path"]:
-                            image_paths.append(block["file_path"])
-                
-                if not text_blocks:
-                    status.update(label="Error: No text content to save", state="error")
-                    return False
-                
-                # Prepare note data
-                note_data = {
-                    "timestamp": datetime.now().isoformat(),
-                    "query": report_data["metadata"]["query"],
-                    "text_blocks": text_blocks,
-                    "image_paths": image_paths
-                }
-                
-                # Log the API endpoint and data being sent
-                api_endpoint = f"{FASTAPI_URL}/pdfs/{report_data['metadata']['folder_name']}/save-note"
-                logger.info(f"Sending request to: {api_endpoint}")
-                logger.info(f"Note data: {json.dumps(note_data, indent=2)}")
-                
-                # Make the API request
-                response = requests.post(
-                    api_endpoint,
-                    json=note_data,
-                    timeout=30  # Add timeout
-                )
-                
-                # Check response
-                if response.status_code == 200:
-                    result = response.json()
-                    if result.get("status") == "success":
-                        status.update(label="Research note saved successfully!", state="complete")
-                        # Show success message with note details
-                        st.success(f"""
-                        Research note saved successfully!
-                        - Query: {note_data['query']}
-                        - Text blocks: {len(text_blocks)}
-                        - Images: {len(image_paths)}
-                        """)
-                        return True
-                    else:
-                        error_msg = result.get("detail", "Unknown error occurred")
-                        status.update(label=f"Error: {error_msg}", state="error")
-                        st.error(f"Failed to save note: {error_msg}")
-                        return False
-                else:
-                    error_msg = f"Server error: {response.status_code}"
-                    try:
-                        error_detail = response.json().get("detail", "No detail provided")
-                        error_msg = f"{error_msg} - {error_detail}"
-                    except:
-                        pass
-                    status.update(label=f"Error: {error_msg}", state="error")
-                    st.error(f"Failed to save note: {error_msg}")
-                    return False
-                    
-            except requests.RequestException as e:
-                error_msg = f"Network error: {str(e)}"
-                status.update(label=f"Error: {error_msg}", state="error")
+        # Extract and clean text content
+        text_blocks = []
+        image_paths = []
+        
+        # Process each block in the report
+        for block in report_data["report"]["blocks"]:
+            if "text" in block:
+                cleaned_text = clean_text_content(block["text"])
+                if cleaned_text:
+                    text_blocks.append(cleaned_text)
+            elif "file_path" in block:
+                if block["file_path"]:
+                    image_paths.append(block["file_path"])
+        
+        if not text_blocks:
+            st.error("Error: No text content to save")
+            return False
+        
+        # Prepare note data
+        note_data = {
+            "timestamp": datetime.now().isoformat(),
+            "query": report_data["metadata"]["query"],
+            "text_blocks": text_blocks,
+            "image_paths": image_paths
+        }
+        
+        # Log the API endpoint and data being sent
+        api_endpoint = f"{FASTAPI_URL}/pdfs/{report_data['metadata']['folder_name']}/save-note"
+        logger.info(f"Sending request to: {api_endpoint}")
+        logger.info(f"Note data: {json.dumps(note_data, indent=2)}")
+        
+        # Make the API request
+        response = requests.post(
+            api_endpoint,
+            json=note_data,
+            timeout=30
+        )
+        
+        # Check response
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("status") == "success":
+                # Show success message with note details
+                st.success(f"""
+                Research note saved successfully!
+                - Query: {note_data['query']}
+                - Text blocks: {len(text_blocks)}
+                - Images: {len(image_paths)}
+                """)
+                return True
+            else:
+                error_msg = result.get("detail", "Unknown error occurred")
                 st.error(f"Failed to save note: {error_msg}")
                 return False
+        else:
+            error_msg = f"Server error: {response.status_code}"
+            try:
+                error_detail = response.json().get("detail", "No detail provided")
+                error_msg = f"{error_msg} - {error_detail}"
+            except:
+                pass
+            st.error(f"Failed to save note: {error_msg}")
+            return False
                 
+    except requests.RequestException as e:
+        error_msg = f"Network error: {str(e)}"
+        st.error(f"Failed to save note: {error_msg}")
+        return False
+        
     except Exception as e:
         logger.error(f"Error saving notes: {str(e)}")
         st.error(f"Error saving notes: {str(e)}")
@@ -434,6 +342,7 @@ def show():
     
     st.title("Document Q&A Interface")
     
+    # Document selection section
     st.markdown("<div class='doc-selector'>", unsafe_allow_html=True)
     pdfs = fetch_pdfs()
     if not pdfs:
@@ -461,28 +370,25 @@ def show():
                 height=100,
                 placeholder="Enter your question here..."
             )
-        
-        with col2:
-            top_k = st.number_input(
-                "Results",
-                min_value=1,
-                max_value=10,
-                value=5
-            )
             
-            if st.button("Generate Report", use_container_width=True):
-                if question:
-                    result = ask_question(question, selected_pdf, top_k)
-                    if result and result.get("status") == "success":
-                        st.session_state.current_report = result
+        if st.button("Generate Report", use_container_width=True):
+            if question:
+                if not st.session_state.extracted_status.get(selected_pdf, False):
+                    if not test_extract_pdf(selected_pdf):
+                        st.stop()
+                
+                result = process_query(question, selected_pdf)
+                if result and result.get("status") == "success":
+                    st.session_state.current_report = result
         
         if st.session_state.current_report:
             render_report_blocks(st.session_state.current_report)
             
-            if st.button("Save as Notes", use_container_width=True):
-                note_number = save_as_notes(st.session_state.current_report)
-                st.success(f"Saved as Note #{note_number}")
-        
+            # Save as Notes button
+            if st.button("Save as Notes", key="save_notes", use_container_width=True):
+                if save_as_notes(st.session_state.current_report):
+                    st.success("Notes saved successfully!")
+                    
         st.markdown("</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
