@@ -892,6 +892,17 @@ class SearchQuery(BaseModel):
     query: str
     top_k: Optional[int] = 5
     pdf_id: str
+    search_all: Optional[bool] = False
+
+class SearchResult(BaseModel):
+    note_id: Optional[str] = None
+    query: str
+    original_query: Optional[str] = None
+    timestamp: Optional[str] = None
+    content: str
+    image_paths: List[str] = []
+    match_type: str  # "exact", "semantic", or "document"
+    source: str      # "research_note" or "document"
  
 @app.post("/pdfs/{folder_name}/process-embeddings")
 async def process_pdf_embeddings(folder_name: str):
@@ -1078,9 +1089,9 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
         - Reference images using exact provided paths: [IMAGE]<image_url_from_chunk>[/IMAGE]
         
         Requirements:
-        - Include images ONLY when they are explicitly provided in the chunks
+        - Include atleast one images provided in the chunks
         - Use the exact image URLs provided in the chunks
-        - Avoid mentioning chunk numbers in your responses
+        - DO NOT mention chunk numbers in your responses
         - Use markdown formatting in text blocks
         - Format numerical data clearly
         - Place images immediately after their relevant text sections
@@ -1273,158 +1284,129 @@ async def get_notes(folder_name: str):
 
 @app.post("/pdfs/{folder_name}/search-notes")
 async def search_notes(folder_name: str, query: SearchQuery):
-    """Search through saved research notes with enhanced LLM-based analysis"""
+    """Search through notes then automatically search document content"""
     try:
         logger.info(f"Searching notes for folder {folder_name} with query: {query.query}")
         
-        # Get all notes for the document
-        all_notes = text_processor.get_research_notes(folder_name)
-        logger.info(f"Found {len(all_notes)} total notes")
-        
         def normalize_query(q: str) -> str:
             return ' '.join(q.lower().split())
-        
-        # First try exact matching
+
+        # Get all notes for the document
+        all_notes = text_processor.get_research_notes(folder_name)
         user_query = normalize_query(query.query)
-        logger.info(f"Normalized user query: {user_query}")
         
-        exact_matches = []
-        
+        # First try research notes
+        research_note_found = False
         for note in all_notes:
             saved_query = normalize_query(note.get('query', ''))
             if user_query == saved_query:
-                logger.info("Found exact match!")
-                exact_matches.append({
-                    "note_id": note.get('note_id'),
-                    "query": note.get('query'),
-                    "timestamp": note.get('timestamp'),
-                    "content": note.get('content'),
-                    "image_paths": note.get('image_paths', []),
-                    "match_type": "exact"
-                })
-        
-        if exact_matches:
-            return {
-                "status": "success",
-                "matches": exact_matches,
-                "match_type": "exact",
-                "total_matches": len(exact_matches)
-            }
-            
-        # If no exact matches, try LLM-based analysis
-        logger.info("No exact matches found, attempting LLM analysis")
-        
-        # Enhanced system prompt for LLM
-        system_prompt = """
-        You are an expert research assistant analyzing document content to determine if it contains the answer to a specific question.
-        
-        Your task is to:
-        1. Carefully analyze if the provided content can answer the user's question
-        2. If you find relevant information, create a detailed report using markdown formatting
-        3. If you find no relevant information, respond with exactly 'NO_ANSWER_PRESENT'
-        
-        When creating a report:
-        - Start with a clear introduction
-        - Use markdown headers for organization
-        - Include relevant quotes from the original content
-        - Reference any available images that support the answer
-        - End with a brief summary
-        
-        Use this format for your report:
-        [TEXT]
-        Your formatted report content here
-        [/TEXT]
-        
-        For any relevant images:
-        [IMAGE]image_path[/IMAGE]
-        """
-        
-        # For each note, try LLM analysis
-        for note in all_notes:
-            content = note.get('content', '')
-            if not content:
-                continue
+                system_prompt = """
+                Analyze if the note content contains the answer to the user's question.
+                If yes, provide a clear, well-formatted response using markdown.
+                If no, respond with exactly 'NO_ANSWER_PRESENT'
+                """
                 
-            # Prepare the prompt for LLM
-            user_prompt = f"""
-            Question: {query.query}
+                response = text_processor.embeddings_client.chat.completions.create(
+                    model="mistralai/mixtral-8x7b-instruct-v0.1",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"""
+                            Question: {query.query}
+                            Note Content: {note.get('content', '')}
+                        """}
+                    ],
+                    temperature=0.3,
+                    max_tokens=1000
+                )
+                
+                answer = response.choices[0].message.content
+                if "NO_ANSWER_PRESENT" not in answer:
+                    research_note_found = True
+                    return {
+                        "status": "success",
+                        "matches": [{
+                            "note_id": note.get('note_id'),
+                            "query": note.get('query'),
+                            "timestamp": note.get('timestamp'),
+                            "content": answer,
+                            "image_paths": note.get('image_paths', []),
+                            "match_type": "exact",
+                            "source": "research_note"
+                        }],
+                        "match_type": "exact",
+                        "source": "research_note",
+                        "total_matches": 1
+                    }
+
+        # If no matches in research notes, search document content
+        if not research_note_found:
+            logger.info("No matches in research notes, searching document content...")
             
-            Content to analyze:
-            {content}
-            
-            Available Images:
-            {', '.join(note.get('image_paths', []))}
-            
-            Task:
-            1. Determine if this content contains the information needed to answer the question
-            2. If yes, generate a well-formatted report
-            3. If no, respond with exactly 'NO_ANSWER_PRESENT'
-            4. Include at least one relevant image if available
-            """
-            
-            # Get LLM response
-            logger.info("Sending content to LLM for analysis")
-            response = text_processor.embeddings_client.chat.completions.create(
-                model="mistralai/mixtral-8x7b-instruct-v0.1",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.3,
-                max_tokens=1500
+            # Search document embeddings
+            doc_results = text_processor.search_similar(
+                query.query,
+                top_k=5,
+                filter_condition={"pdf_id": folder_name}
             )
             
-            llm_response = response.choices[0].message.content
-            logger.info(f"LLM Response received: {llm_response[:100]}...")
-            
-            # Check if LLM found relevant information
-            if "NO_ANSWER_PRESENT" not in llm_response:
-                logger.info("LLM found relevant content")
+            if doc_results:
+                # Format chunks for LLM
+                chunks_text = "\n\n".join([
+                    f"Content from Page {chunk.get('page_num', 'N/A')}:\n{chunk['content']}"
+                    for chunk in doc_results
+                ])
                 
-                # Extract text and image sections
-                text_sections = re.findall(r'\[TEXT\](.*?)\[/TEXT\]', llm_response, re.DOTALL)
-                image_refs = re.findall(r'\[IMAGE\](.*?)\[/IMAGE\]', llm_response, re.DOTALL)
+                # Generate comprehensive answer
+                system_prompt = """
+                Create a comprehensive answer using the provided document content.
+                Format your response in markdown and include:
+                1. A clear, direct answer to the question
+                2. Supporting evidence from the text with page references
+                3. Any relevant key points or insights
                 
-                # Combine text sections
-                formatted_content = "\n\n".join(text_sections) if text_sections else llm_response
+                Use headers and bullet points for clarity when appropriate.
+                If no relevant answer can be found, respond with 'NO_RELEVANT_INFORMATION'
+                """
                 
-                # Get referenced images, or first available image if none specified
-                image_paths = []
-                if image_refs:
-                    image_paths = [
-                        path for path in note.get('image_paths', [])
-                        if any(ref.strip() in path for ref in image_refs)
-                    ]
-                if not image_paths and note.get('image_paths'):
-                    image_paths = [note['image_paths'][0]]
+                response = text_processor.embeddings_client.chat.completions.create(
+                    model="mistralai/mixtral-8x7b-instruct-v0.1",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"Question: {query.query}\n\nDocument Content:\n{chunks_text}"}
+                    ],
+                    temperature=0.3,
+                    max_tokens=1500
+                )
                 
-                return {
-                    "status": "success",
-                    "matches": [{
-                        "note_id": note.get('note_id'),
-                        "query": query.query,
-                        "original_query": note.get('query'),
-                        "timestamp": note.get('timestamp'),
-                        "content": formatted_content,
-                        "image_paths": image_paths,
-                        "match_type": "semantic"
-                    }],
-                    "match_type": "semantic",
-                    "total_matches": 1
-                }
+                answer = response.choices[0].message.content
+                if "NO_RELEVANT_INFORMATION" not in answer:
+                    # Collect images from relevant chunks
+                    image_paths = [chunk['image_path'] for chunk in doc_results if chunk.get('image_path')]
+                    
+                    return {
+                        "status": "success",
+                        "matches": [{
+                            "content": answer,
+                            "image_paths": image_paths,
+                            "match_type": "document",
+                            "source": "document",
+                            "query": query.query
+                        }],
+                        "match_type": "document",
+                        "source": "document",
+                        "total_matches": 1,
+                        "search_path": ["research_notes", "document"]
+                    }
         
-        # If no relevant content found in any notes
-        logger.info("No relevant content found in any notes")
+        # No relevant information found in either source
         return {
             "status": "success",
             "matches": [],
             "match_type": "none",
-            "total_matches": 0
+            "total_matches": 0,
+            "search_path": ["research_notes", "document"]
         }
         
     except Exception as e:
-        logger.error(f"Error searching notes: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error searching notes: {str(e)}"
-        )
+        logger.error(f"Error in search: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
