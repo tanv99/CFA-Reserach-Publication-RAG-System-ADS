@@ -1273,7 +1273,7 @@ async def get_notes(folder_name: str):
 
 @app.post("/pdfs/{folder_name}/search-notes")
 async def search_notes(folder_name: str, query: SearchQuery):
-    """Search through saved research notes for exact query matches"""
+    """Search through saved research notes with enhanced LLM-based analysis"""
     try:
         logger.info(f"Searching notes for folder {folder_name} with query: {query.query}")
         
@@ -1282,39 +1282,144 @@ async def search_notes(folder_name: str, query: SearchQuery):
         logger.info(f"Found {len(all_notes)} total notes")
         
         def normalize_query(q: str) -> str:
-            """Normalize query string by:
-            1. Converting to lowercase
-            2. Replacing tabs and multiple spaces with single space
-            3. Stripping whitespace
-            """
             return ' '.join(q.lower().split())
         
-        # Normalize user query
+        # First try exact matching
         user_query = normalize_query(query.query)
-        logger.info(f"Normalized user query: '{user_query}'")
+        logger.info(f"Normalized user query: {user_query}")
         
-        matching_notes = []
+        exact_matches = []
+        
         for note in all_notes:
-            # Normalize saved query
             saved_query = normalize_query(note.get('query', ''))
-            logger.info(f"Comparing with normalized saved query: '{saved_query}'")
-            
             if user_query == saved_query:
                 logger.info("Found exact match!")
-                matching_notes.append({
+                exact_matches.append({
                     "note_id": note.get('note_id'),
-                    "query": note.get('query'),  # Keep original query in response
+                    "query": note.get('query'),
                     "timestamp": note.get('timestamp'),
                     "content": note.get('content'),
-                    "image_paths": note.get('image_paths', [])
+                    "image_paths": note.get('image_paths', []),
+                    "match_type": "exact"
                 })
         
-        logger.info(f"Found {len(matching_notes)} matching notes")
+        if exact_matches:
+            return {
+                "status": "success",
+                "matches": exact_matches,
+                "match_type": "exact",
+                "total_matches": len(exact_matches)
+            }
+            
+        # If no exact matches, try LLM-based analysis
+        logger.info("No exact matches found, attempting LLM analysis")
         
+        # Enhanced system prompt for LLM
+        system_prompt = """
+        You are an expert research assistant analyzing document content to determine if it contains the answer to a specific question.
+        
+        Your task is to:
+        1. Carefully analyze if the provided content can answer the user's question
+        2. If you find relevant information, create a detailed report using markdown formatting
+        3. If you find no relevant information, respond with exactly 'NO_ANSWER_PRESENT'
+        
+        When creating a report:
+        - Start with a clear introduction
+        - Use markdown headers for organization
+        - Include relevant quotes from the original content
+        - Reference any available images that support the answer
+        - End with a brief summary
+        
+        Use this format for your report:
+        [TEXT]
+        Your formatted report content here
+        [/TEXT]
+        
+        For any relevant images:
+        [IMAGE]image_path[/IMAGE]
+        """
+        
+        # For each note, try LLM analysis
+        for note in all_notes:
+            content = note.get('content', '')
+            if not content:
+                continue
+                
+            # Prepare the prompt for LLM
+            user_prompt = f"""
+            Question: {query.query}
+            
+            Content to analyze:
+            {content}
+            
+            Available Images:
+            {', '.join(note.get('image_paths', []))}
+            
+            Task:
+            1. Determine if this content contains the information needed to answer the question
+            2. If yes, generate a well-formatted report
+            3. If no, respond with exactly 'NO_ANSWER_PRESENT'
+            4. Include at least one relevant image if available
+            """
+            
+            # Get LLM response
+            logger.info("Sending content to LLM for analysis")
+            response = text_processor.embeddings_client.chat.completions.create(
+                model="mistralai/mixtral-8x7b-instruct-v0.1",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                max_tokens=1500
+            )
+            
+            llm_response = response.choices[0].message.content
+            logger.info(f"LLM Response received: {llm_response[:100]}...")
+            
+            # Check if LLM found relevant information
+            if "NO_ANSWER_PRESENT" not in llm_response:
+                logger.info("LLM found relevant content")
+                
+                # Extract text and image sections
+                text_sections = re.findall(r'\[TEXT\](.*?)\[/TEXT\]', llm_response, re.DOTALL)
+                image_refs = re.findall(r'\[IMAGE\](.*?)\[/IMAGE\]', llm_response, re.DOTALL)
+                
+                # Combine text sections
+                formatted_content = "\n\n".join(text_sections) if text_sections else llm_response
+                
+                # Get referenced images, or first available image if none specified
+                image_paths = []
+                if image_refs:
+                    image_paths = [
+                        path for path in note.get('image_paths', [])
+                        if any(ref.strip() in path for ref in image_refs)
+                    ]
+                if not image_paths and note.get('image_paths'):
+                    image_paths = [note['image_paths'][0]]
+                
+                return {
+                    "status": "success",
+                    "matches": [{
+                        "note_id": note.get('note_id'),
+                        "query": query.query,
+                        "original_query": note.get('query'),
+                        "timestamp": note.get('timestamp'),
+                        "content": formatted_content,
+                        "image_paths": image_paths,
+                        "match_type": "semantic"
+                    }],
+                    "match_type": "semantic",
+                    "total_matches": 1
+                }
+        
+        # If no relevant content found in any notes
+        logger.info("No relevant content found in any notes")
         return {
             "status": "success",
-            "matches": matching_notes,
-            "total_matches": len(matching_notes)
+            "matches": [],
+            "match_type": "none",
+            "total_matches": 0
         }
         
     except Exception as e:

@@ -93,7 +93,7 @@ def render_image(image_path: str):
         st.warning("Failed to load image")
 
 def render_note_card(note: Dict):
-    """Render a note card for selected notes section with closed expander by default"""
+    """Render a note card for selected notes section"""
     try:
         with st.container():
             st.markdown(f"""
@@ -106,7 +106,7 @@ def render_note_card(note: Dict):
                 </div>
             """, unsafe_allow_html=True)
             
-            # Expander closed by default for research notes
+            # Note content in collapsed state by default
             with st.expander("View Note Content", expanded=False):
                 if note.get('content'):
                     st.markdown(note['content'])
@@ -122,46 +122,58 @@ def render_note_card(note: Dict):
         st.error("Error displaying note")
 
 def render_search_result(note: Dict):
-    """Render a note card for search results section with open expander by default"""
+    """Render a search result with different styles for exact and semantic matches"""
     try:
-        with st.container():
-            st.markdown("""
-                <style>
-                .search-result {
-                    border-left: 4px solid #28a745;
-                    padding: 1rem;
-                    margin: 1rem 0;
-                    background-color: #f8f9fa;
-                    border-radius: 4px;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
-                <div class="search-result">
-                    <div style="margin-bottom: 0.5rem;">
-                        <strong>Matching Note</strong><br>
-                        <strong>Query:</strong> {note.get('query', 'No query available')}
-                    </div>
+        match_type = note.get('match_type', 'exact')
+        
+        # Different styling for exact vs semantic matches
+        if match_type == 'exact':
+            border_color = "#28a745"  # Green for exact matches
+            match_label = "Exact Match"
+        else:
+            border_color = "#17a2b8"  # Blue for semantic matches
+            match_label = "Semantic Match"
+        
+        st.markdown(f"""
+            <style>
+            .search-result-{match_type} {{
+                border-left: 4px solid {border_color};
+                padding: 1rem;
+                margin: 1rem 0;
+                background-color: #f8f9fa;
+                border-radius: 4px;
+            }}
+            </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+            <div class="search-result-{match_type}">
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>{match_label}</strong><br>
+                    <strong>Your Question:</strong> {note.get('query', 'No query available')}
+                    {f'<br><strong>Original Note Query:</strong> {note.get("original_query", "")}' if match_type == 'semantic' else ''}
                 </div>
-            """, unsafe_allow_html=True)
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Show search results in expanded state by default
+        with st.expander("View Content", expanded=True):
+            if note.get('content'):
+                st.markdown(note['content'])
+            else:
+                st.info("No text content available")
             
-            # Expander open by default for search results
-            with st.expander("View Matching Content", expanded=True):
-                if note.get('content'):
-                    st.markdown(note['content'])
-                else:
-                    st.info("No text content available")
+            if note.get('image_paths'):
+                st.markdown("### Supporting Images")
+                for image_path in note['image_paths']:
+                    if image_path.strip():
+                        render_image(image_path)
+        
+        st.markdown("---")
                 
-                if note.get('image_paths'):
-                    for image_path in note['image_paths']:
-                        if image_path.strip():
-                            render_image(image_path)
-            
-            st.markdown("---")
     except Exception as e:
-        logger.error(f"Error something: {str(e)}")
-        st.error("Error something")
+        logger.error(f"Error rendering search result: {str(e)}")
+        st.error("Error displaying search result")
 
 def sort_notes(notes: List[Dict], sort_order: str) -> List[Dict]:
     """Sort notes by timestamp"""
@@ -246,7 +258,7 @@ def normalize_query(query: str) -> str:
     return ' '.join(query.split())
 
 def show():
-    """Main function to display the research notes page with reorganized layout"""
+    """Main function to display the research notes page with enhanced search functionality"""
     try:
         st.title("Research Notes")
         
@@ -257,7 +269,7 @@ def show():
             st.session_state.selected_note = None
         if 'question' not in st.session_state:
             st.session_state.question = ""
-            
+        
         # Create three columns for document selection, note selection, and sort order
         col1, col2, col3 = st.columns([2, 2, 1])
         
@@ -312,7 +324,7 @@ def show():
                         key="notes_sort_order"
                     )
                 
-                # First section: Display selected notes
+                # Display selected notes section
                 if st.session_state.selected_note:
                     st.markdown("### Selected Research Notes")
                     sorted_notes = sort_notes(notes, sort_order)
@@ -332,7 +344,7 @@ def show():
                 # Add separator before search section
                 st.markdown("---")
                 
-                # Second section: Search interface
+                # Search section
                 st.markdown("### Search Notes")
                 search_col1, search_col2 = st.columns([4, 1])
                 
@@ -347,44 +359,53 @@ def show():
                     st.markdown("<br>", unsafe_allow_html=True)
                     search_clicked = st.button("Search", type="primary", use_container_width=True)
                 
-                # Third section: Search results (only shown after search)
+                # Handle search
                 if search_clicked and question.strip():
                     st.markdown("### Search Results")
-                    normalized_question = ' '.join(question.split())
-                    
-                    # If "ALL" is selected, search through all notes
-                    if st.session_state.selected_note == "ALL":
-                        matching_notes = []
-                        for note in notes:
-                            saved_query = ' '.join(note.get('query', '').split())
-                            if normalized_question.lower().strip() == saved_query.lower().strip():
-                                matching_notes.append(note)
-                        
-                        if matching_notes:
-                            st.success(f"Found {len(matching_notes)} matching notes!")
-                            for match in matching_notes:
-                                render_search_result(match)
-                        else:
-                            st.info("No matching notes found for your question.")
+                    with st.spinner("Searching for relevant information..."):
+                        try:
+                            response = requests.post(
+                                f"{FASTAPI_URL}/pdfs/{st.session_state.selected_document}/search-notes",
+                                json={
+                                    "query": question,
+                                    "top_k": 5,
+                                    "pdf_id": st.session_state.selected_document
+                                }
+                            )
                             
-                    # If specific note is selected, search only that note
-                    elif st.session_state.selected_note and st.session_state.selected_note != "Select a note":
-                        note_id = st.session_state.selected_note.split("Note ")[-1]
-                        selected_note = next(
-                            (note for note in notes if str(note.get('note_id')) == note_id),
-                            None
-                        )
-                        
-                        if selected_note:
-                            saved_query = ' '.join(selected_note.get('query', '').split())
-                            if normalized_question.lower().strip() == saved_query.lower().strip():
-                                st.success("Found matching note!")
-                                render_search_result(selected_note)
+                            if response.status_code == 200:
+                                results = response.json()
+                                matches = results.get("matches", [])
+                                match_type = results.get("match_type", "none")
+                                
+                                if matches:
+                                    if match_type == "exact":
+                                        st.success("")
+                                    else:
+                                        st.success("")
+                                        
+                                    for match in matches:
+                                        render_search_result(match)
+                                else:
+                                    st.info("No relevant information found in the research notes.")
+                                    
+                                    # Additional context for no matches
+                                    if st.session_state.selected_note != "ALL":
+                                        st.markdown("""
+                                            **Note:** Currently searching only the selected note. 
+                                            Select "ALL" from the dropdown to search across all notes.
+                                        """)
                             else:
-                                st.info("No match found for the selected note.")
+                                st.error(f"Failed to search notes. Status code: {response.status_code}")
+                                
+                        except Exception as e:
+                            logger.error(f"Search error: {str(e)}")
+                            st.error("An error occurred while processing your search.")
             else:
                 st.info(f"No research notes found for {st.session_state.selected_document}")
                 
     except Exception as e:
         logger.error(f"Error in research notes page: {str(e)}")
         st.error("An error occurred while loading the page")
+        if os.getenv("DEBUG"):
+            st.error(f"Debug info: {str(e)}")
