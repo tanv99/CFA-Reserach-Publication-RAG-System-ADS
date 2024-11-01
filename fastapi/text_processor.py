@@ -361,5 +361,82 @@ class TextProcessor:
         except Exception as e:
             logger.error(f"Error retrieving research notes: {str(e)}")
             raise
+    
+    # Add this method to your TextProcessor class
+
+    def get_research_notes(self, document_id: str) -> List[Dict]:
+        """Retrieve all research notes for a document from Pinecone"""
+        try:
+            # Query Pinecone for research notes using metadata filters
+            search_response = self.index.query(
+                vector=[0] * 1024,  # Placeholder vector since we're filtering by metadata
+                filter={
+                    "pdf_id": document_id,
+                    "type": "research_note"
+                },
+                top_k=100,  # Adjust if you need more notes
+                include_metadata=True
+            )
+            
+            logger.info(f"Retrieved {len(search_response.matches)} notes for document {document_id}")
+            
+            # Format the results
+            formatted_notes = []
+            for match in search_response.matches:
+                try:
+                    # Parse the stored JSON string from metadata
+                    note_info = json.loads(match.metadata.get("text", "{}"))
+                    
+                    formatted_note = {
+                        "note_id": match.id,
+                        "query": match.metadata.get("query", ""),
+                        "timestamp": match.metadata.get("timestamp", ""),
+                        "content": note_info.get("content", ""),
+                        "image_paths": note_info.get("image_paths", [])
+                    }
+                    
+                    logger.info(f"Processing note {match.id} with query: {formatted_note['query']}")
+                    formatted_notes.append(formatted_note)
+                    
+                except json.JSONDecodeError as e:
+                    logger.error(f"Error parsing note content for {match.id}: {str(e)}")
+                    continue
+                
+            # Sort notes by timestamp (newest first)
+            formatted_notes.sort(
+                key=lambda x: x.get("timestamp", ""), 
+                reverse=True
+            )
+            
+            return formatted_notes
+            
+        except Exception as e:
+            logger.error(f"Error retrieving research notes: {str(e)}")
+            raise
+
+    def search_notes_by_query(self, document_id: str, query: str) -> List[Dict]:
+        """Search for research notes that match a specific query"""
+        try:
+            # Get all notes for the document
+            all_notes = self.get_research_notes(document_id)
+            logger.info(f"Searching through {len(all_notes)} notes for query match: {query}")
+            
+            # Find exact matches (case-insensitive)
+            user_query = query.lower().strip()
+            matching_notes = []
+            
+            for note in all_notes:
+                saved_query = note.get("query", "").lower().strip()
+                logger.info(f"Comparing queries - User: '{user_query}' vs Saved: '{saved_query}'")
+                
+                if user_query == saved_query:
+                    logger.info(f"Found matching note with ID: {note.get('note_id')}")
+                    matching_notes.append(note)
+            
+            return matching_notes
+            
+        except Exception as e:
+            logger.error(f"Error searching notes by query: {str(e)}")
+            raise
 # Export the class
 __all__ = ['TextProcessor']

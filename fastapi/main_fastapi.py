@@ -569,6 +569,9 @@ def _get_sorted_image_files(image_dir: str) -> List[Path]:
     sorted_files = sorted(raw_files, key=get_page_number)
     return sorted_files
 
+
+
+
 class PDFProcessor_llama:
     def __init__(self, api_key: str):
         """Initialize LlamaParse with enhanced multimodal configuration"""
@@ -579,50 +582,98 @@ class PDFProcessor_llama:
             vendor_multimodal_model_name="anthropic-sonnet-3.5"
         )
     
-    def get_text_nodes(self, json_dicts: List[Dict], image_dir: Optional[str] = None) -> List[TextNode]:
-        """Create text nodes from parsed PDF content with image metadata."""
+    def _get_sorted_image_files(self, image_dir: str) -> List[str]:
+        """Get sorted list of image files from directory based on page numbers."""
+        if not os.path.exists(image_dir):
+            return []
+            
+        def extract_page_num(filename: str) -> int:
+            try:
+                # Extract page number from filename format "page_{num}.jpg"
+                if "page_" in filename:
+                    return int(filename.split("page_")[1].split(".")[0])
+                return 0
+            except:
+                return 0
+                
+        image_files = []
+        for filename in os.listdir(image_dir):
+            if filename.endswith(('.jpg', '.jpeg', '.png')):
+                full_path = os.path.join(image_dir, filename)
+                page_num = extract_page_num(filename)
+                image_files.append((page_num, full_path))
+                
+        # Sort by page number and return only the paths
+        return [path for _, path in sorted(image_files)]
+
+    def get_text_nodes(self, md_json_list: List[Dict], image_dir: Optional[str] = None) -> List[TextNode]:
+        """Create text nodes from parsed PDF content with correctly mapped image metadata."""
         nodes = []
         
-        image_files = _get_sorted_image_files(image_dir) if image_dir is not None else None
-        md_texts = [d.get("md", "") for d in json_dicts]
+        # Get sorted image files first
+        sorted_images = self._get_sorted_image_files(image_dir) if image_dir else []
+        logger.info(f"Found {len(sorted_images)} sorted images")
         
-        for idx, md_text in enumerate(md_texts):
-            chunk_metadata = {"page_num": idx + 1}
-            if image_files is not None and idx < len(image_files):
-                image_file = image_files[idx]
-                chunk_metadata["image_path"] = str(image_file)
-            chunk_metadata["parsed_text_markdown"] = md_text
+        # Create a mapping of page numbers to image paths
+        page_to_image = {}
+        for image_path in sorted_images:
+            try:
+                # Extract page number from image filename
+                filename = os.path.basename(image_path)
+                if "page_" in filename:
+                    page_num = int(filename.split("page_")[1].split(".")[0])
+                    page_to_image[page_num] = image_path
+            except Exception as e:
+                logger.error(f"Error mapping image {image_path}: {str(e)}")
+        
+        # Create nodes with correct image mappings
+        for page in md_json_list:
+            page_num = page.get('page', 0)
+            content = page.get('md', '').strip()
+            
+            if not content or content == "NO_CONTENT_HERE":
+                continue
+            
+            # Get corresponding image for this page number
+            image_path = page_to_image.get(page_num)
+            if image_path:
+                logger.info(f"Mapping image {image_path} to page {page_num}")
+            
+            chunk_metadata = {
+                "page_num": page_num,
+                "image_path": image_path,
+                "parsed_text_markdown": content
+            }
             
             node = TextNode(
-                text="",
+                text=content,
                 metadata=chunk_metadata,
             )
             nodes.append(node)
         
         return nodes
-    
+
     def process_pdf(self, pdf_path: str, folder_name: str) -> Dict[str, Any]:
         """Process PDF and extract content using LlamaParse with indexing"""
         try:
             logger.info(f"Processing PDF: {pdf_path}")
             
-            # First get the markdown content
+            # Get markdown content
             logger.info("Getting JSON result...")
             md_json_objs = self.parser.get_json_result(pdf_path)
             
-            # Check if we got valid results
             if not md_json_objs or not isinstance(md_json_objs, list):
                 raise ValueError("Invalid JSON result from parser")
             
             md_json_list = md_json_objs[0]["pages"]
             logger.info(f"Successfully processed {len(md_json_list)} pages")
             
-            # Create image directory with absolute path
+            # Create image directory
             image_dir = os.path.abspath(os.path.join(IMAGES_DIR, folder_name))
             os.makedirs(image_dir, exist_ok=True)
             logger.info(f"Created image directory at: {image_dir}")
             
-            # Extract images with explicit path
+            # Extract images
             logger.info("Extracting images...")
             image_dicts = self.parser.get_images(
                 md_json_objs,
@@ -630,9 +681,16 @@ class PDFProcessor_llama:
             )
             logger.info(f"Found {len(image_dicts) if image_dicts else 0} images")
             
-            # Create text nodes with image metadata
+            # Create text nodes with correct image metadata
             text_nodes = self.get_text_nodes(md_json_list, image_dir)
             logger.info(f"Created {len(text_nodes)} text nodes")
+            
+            # Validate node creation
+            for node in text_nodes:
+                page_num = node.metadata.get('page_num')
+                image_path = node.metadata.get('image_path')
+                if image_path:
+                    logger.info(f"Node for page {page_num} has image: {image_path}")
             
             # Structure the content
             extracted_content = {
@@ -646,7 +704,7 @@ class PDFProcessor_llama:
                 }
             }
             
-            # Process each page's markdown content
+            # Process pages
             for page in md_json_list:
                 extracted_content["pages"].append({
                     "page_num": page.get("page", 0),
@@ -654,21 +712,22 @@ class PDFProcessor_llama:
                     "has_images": bool(page.get("images", []))
                 })
             
-            # Process image information if any images were found
+            # Process images
             if image_dicts:
                 for idx, img in enumerate(image_dicts):
                     try:
+                        page_num = img.get("page_number", 0)
                         image_data = {
-                            "file_name": f"image_{idx}.png" if not img.get("file_path") else os.path.basename(img["file_path"]),
-                            "local_path": os.path.relpath(img.get("file_path", ""), BASE_DIR) if img.get("file_path") else "",
-                            "page_number": img.get("page_number", 0),
+                            "file_name": f"page_{page_num}.jpg",
+                            "local_path": os.path.join(image_dir, f"page_{page_num}.jpg"),
+                            "page_number": page_num,
                             "caption": img.get("caption", "")
                         }
                         extracted_content["images"].append(image_data)
                     except Exception as e:
                         logger.error(f"Error processing image {idx}: {str(e)}")
             
-            # Add text nodes information
+            # Add nodes
             for node in text_nodes:
                 extracted_content["nodes"].append({
                     "page_num": node.metadata.get("page_num"),
@@ -676,17 +735,17 @@ class PDFProcessor_llama:
                     "content": node.metadata.get("parsed_text_markdown")
                 })
             
-            # Save the extracted content
+            # Save content
             output_dir = os.path.join(EXTRACTION_DIR, folder_name)
             os.makedirs(output_dir, exist_ok=True)
             
-            # Save markdown content
+            # Save markdown
             markdown_path = os.path.join(output_dir, "extracted_content.md")
             markdown_content = "\n\n".join(page["content"] for page in extracted_content["pages"])
             with open(markdown_path, "w", encoding="utf-8") as f:
                 f.write(markdown_content)
             
-            # Save nodes data
+            # Save nodes
             nodes_path = os.path.join(output_dir, "text_nodes.json")
             with open(nodes_path, "w", encoding="utf-8") as f:
                 json.dump([{
@@ -702,6 +761,7 @@ class PDFProcessor_llama:
             raise
         
         
+         
 # Add this test endpoint to verify paths and processing
 @app.post("/pdfs/{folder_name}/test-extract")
 async def test_extraction(folder_name: str):
@@ -973,11 +1033,11 @@ class ReportOutput(BaseModel):
                 display(Image(filename=block.file_path))
   
   
-     
 @app.post("/pdfs/{folder_name}/search-and-process")
 async def search_and_process_chunks(folder_name: str, query: SearchQuery):
     """
     Search through PDF content and generate a structured report with text and images.
+    Uses direct image paths from search results instead of scanning directories.
     """
     try:
         # 1. Get search results
@@ -988,67 +1048,45 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
             filter_condition=filter_condition
         )
         
-        # 2. Get actual image files from the directory
-        image_dir = os.path.join("/app/storage/images", folder_name)
-        available_images = {}
-        
-        if os.path.exists(image_dir):
-            # Get list of image files sorted by modification time (newest first)
-            image_files = sorted(
-                [f for f in os.listdir(image_dir) if f.endswith('.jpg')],
-                key=lambda x: os.path.getmtime(os.path.join(image_dir, x)),
-                reverse=True
-            )
-            
-            # Map page numbers to actual image files
-            for img_file in image_files:
-                if 'page_1' in img_file:
-                    available_images[1] = img_file
-                elif 'page_2' in img_file:
-                    available_images[2] = img_file
-            
-            logger.info(f"Available images: {available_images}")
-        
-        # 3. Update image paths in search results with actual files
+        # 2. Process image paths directly from search results
         for chunk in search_results:
-            page_num = chunk.get('page_num')
-            if page_num and page_num in available_images:
-                actual_image = available_images[page_num]
-                chunk['image_path'] = actual_image
+            if chunk.get('image_path'):
                 # Create URL-safe paths for frontend
                 safe_folder = urllib.parse.quote(folder_name)
-                safe_filename = urllib.parse.quote(actual_image)
+                # Extract filename from full path
+                image_filename = os.path.basename(chunk['image_path'])
+                safe_filename = urllib.parse.quote(image_filename)
                 chunk['image_url'] = f"/images/{safe_folder}/{safe_filename}"
-                logger.info(f"Updated image path for page {page_num}: {chunk['image_url']}")
+                logger.info(f"Created image URL for chunk: {chunk['image_url']}")
         
-        # 4. Prepare chunks text for LLM
+        # 3. Prepare chunks text for LLM with explicit image paths
         chunks_text = [f"""
             Chunk {i}:
             Content from Page {chunk['page_num']}:
             {chunk['content']}
             Relevance Score: {chunk['score']}
-            Image Path: {chunk.get('image_url', 'None')}
+            Image Reference: {chunk.get('image_url', 'None')}
             """ for i, chunk in enumerate(search_results, 1)]
         
-        # 5. Define system prompt
+        # 4. Define system prompt with emphasis on using provided image paths
         system_prompt = """
-        You are a report generation assistant tasked with producing a well-formatted context given parsed context.
-        You will be given context from one or more reports that take the form of parsed text.
-        You are responsible for producing a report with interleaving text and images.
-
+        You are a report generation assistant tasked with producing a well-formatted report from parsed content.
+        When referencing images, use ONLY the Image Reference paths provided in the chunks.
+        
         Format your response with clear text sections and image references:
         - Start text sections with [TEXT] and end with [/TEXT]
-        - Reference images with [IMAGE]path/to/image[/IMAGE]
-
+        - Reference images using exact provided paths: [IMAGE]<image_url_from_chunk>[/IMAGE]
+        
         Requirements:
-        - Include ONLY images from chunks with visual elements (tables, figures, graphs)
-        - Avoid mentioning chunk numbers in your responses. Use only page numbers for any citations or references to images, text, tables, or graphs
-        - You MUST include at least one image block
+        - Include images ONLY when they are explicitly provided in the chunks
+        - Use the exact image URLs provided in the chunks
+        - Avoid mentioning chunk numbers in your responses
         - Use markdown formatting in text blocks
         - Format numerical data clearly
+        - Place images immediately after their relevant text sections
         """
         
-        # 6. Define user prompt
+        # 5. Define user prompt with emphasis on image handling
         base_prompt = f"""
         Analyze these chunks and generate a structured report:
         
@@ -1058,12 +1096,13 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
         
         Query: {query.query}
         
-        Format your response as alternating text and image sections.
-        Use markdown formatting in text sections.
-        Include relevant images for visual content.
+        Important:
+        - Use the exact Image Reference paths provided in the chunks
+        - Include images only where they directly support the text
+        - Format your response as alternating text and image sections
         """
         
-        # 7. Get LLM response
+        # 6. Get LLM response
         llm_response = text_processor.embeddings_client.chat.completions.create(
             model="mistralai/mixtral-8x7b-instruct-v0.1",
             messages=[
@@ -1074,7 +1113,7 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
             max_tokens=1500
         )
         
-        # 8. Process LLM response into blocks
+        # 7. Process LLM response into blocks
         content = llm_response.choices[0].message.content
         report_blocks = []
         
@@ -1082,39 +1121,28 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
         text_blocks = re.findall(r'\[TEXT\](.*?)\[/TEXT\]', content, re.DOTALL)
         image_blocks = re.findall(r'\[IMAGE\](.*?)\[/IMAGE\]', content, re.DOTALL)
         
-        # Process text blocks
+        # Interleave text and image blocks
         for text in text_blocks:
             clean_text = text.strip()
-            # Remove code block markers if present
             clean_text = re.sub(r'```[a-zA-Z]*\n|```', '', clean_text)
             report_blocks.append(TextBlock(text=clean_text))
-        
-        # Process image blocks
-        for image_ref in image_blocks:
-            image_ref = image_ref.strip()
-            for chunk in search_results:
-                if chunk.get('image_url') and (
-                    image_ref in chunk['image_url'] or 
-                    image_ref in chunk.get('image_path', '')
-                ):
-                    report_blocks.append(ImageBlock(file_path=chunk['image_url']))
+            
+            # Look for corresponding image reference in chunks
+            for image_ref in image_blocks:
+                image_ref = image_ref.strip()
+                if any(chunk.get('image_url') == image_ref for chunk in search_results):
+                    report_blocks.append(ImageBlock(file_path=image_ref))
+                    image_blocks.remove(image_ref)  # Remove processed image
                     break
         
-        # Ensure at least one image is included if there are images available
-        if not any(isinstance(block, ImageBlock) for block in report_blocks):
-            for chunk in search_results:
-                if chunk.get('image_url'):
-                    report_blocks.append(ImageBlock(file_path=chunk['image_url']))
-                    break
-        
-        # 9. Create final report
+        # 8. Create final report
         report = ReportOutput(blocks=report_blocks)
         
         # Log the final report structure for debugging
         logger.info(f"Final report blocks: {[type(block).__name__ for block in report_blocks]}")
         logger.info(f"Image blocks: {[block.file_path for block in report_blocks if isinstance(block, ImageBlock)]}")
         
-        # 10. Return processed results
+        # 9. Return processed results
         return {
             "status": "success",
             "report": report.dict(),
@@ -1133,7 +1161,6 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
             status_code=500, 
             detail=f"Error processing report: {str(e)}"
         )
-
 
 @app.get("/images/{folder_name}/{image_name}")
 async def get_image(folder_name: str, image_name: str):
@@ -1241,4 +1268,58 @@ async def get_notes(folder_name: str):
         raise HTTPException(
             status_code=500,
             detail=f"Error retrieving notes: {str(e)}"
+        )
+############################################ Research note searching s##################################################################
+
+@app.post("/pdfs/{folder_name}/search-notes")
+async def search_notes(folder_name: str, query: SearchQuery):
+    """Search through saved research notes for exact query matches"""
+    try:
+        logger.info(f"Searching notes for folder {folder_name} with query: {query.query}")
+        
+        # Get all notes for the document
+        all_notes = text_processor.get_research_notes(folder_name)
+        logger.info(f"Found {len(all_notes)} total notes")
+        
+        def normalize_query(q: str) -> str:
+            """Normalize query string by:
+            1. Converting to lowercase
+            2. Replacing tabs and multiple spaces with single space
+            3. Stripping whitespace
+            """
+            return ' '.join(q.lower().split())
+        
+        # Normalize user query
+        user_query = normalize_query(query.query)
+        logger.info(f"Normalized user query: '{user_query}'")
+        
+        matching_notes = []
+        for note in all_notes:
+            # Normalize saved query
+            saved_query = normalize_query(note.get('query', ''))
+            logger.info(f"Comparing with normalized saved query: '{saved_query}'")
+            
+            if user_query == saved_query:
+                logger.info("Found exact match!")
+                matching_notes.append({
+                    "note_id": note.get('note_id'),
+                    "query": note.get('query'),  # Keep original query in response
+                    "timestamp": note.get('timestamp'),
+                    "content": note.get('content'),
+                    "image_paths": note.get('image_paths', [])
+                })
+        
+        logger.info(f"Found {len(matching_notes)} matching notes")
+        
+        return {
+            "status": "success",
+            "matches": matching_notes,
+            "total_matches": len(matching_notes)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error searching notes: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error searching notes: {str(e)}"
         )
