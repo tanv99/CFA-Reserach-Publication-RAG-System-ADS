@@ -264,7 +264,7 @@ def main():
                 page1.show()
             elif selected_page == "Summary":
                 page2.show()
-            elif selected_page == "Page Three":
+            elif selected_page == "Document Q&A System":
                 page3.show()
             elif selected_page == "Research Notes":
                 page4.show()
