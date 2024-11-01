@@ -438,5 +438,109 @@ class TextProcessor:
         except Exception as e:
             logger.error(f"Error searching notes by query: {str(e)}")
             raise
+    
+    def analyze_content_relevance(self, query: str, content: str) -> tuple[bool, str]:
+        """
+        Analyze if content is relevant to the query using LLM.
+        Returns (is_relevant, processed_content)
+        """
+        try:
+            system_prompt = """
+            Analyze if the provided content answers the user's question.
+            If relevant, extract and format the relevant portion.
+            If not relevant, respond with exactly 'NO_MATCH'.
+            
+            Response format for relevant content:
+            1. Start with clear relevance indicator
+            2. Format content with markdown
+            3. Highlight key information
+            """
+            
+            user_prompt = f"""
+            Question: {query}
+            
+            Content to analyze:
+            {content}
+            
+            Determine if this content helps answer the question.
+            If yes, provide formatted relevant excerpt.
+            If no, respond with exactly 'NO_MATCH'.
+            """
+            
+            response = self.embeddings_client.chat.completions.create(
+                model="mistralai/mixtral-8x7b-instruct-v0.1",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                max_tokens=1000
+            )
+            
+            result = response.choices[0].message.content
+            is_relevant = "NO_MATCH" not in result
+            return is_relevant, result if is_relevant else ""
+            
+        except Exception as e:
+            logger.error(f"Error in content relevance analysis: {str(e)}")
+            return False, ""
+
+    def create_report_from_chunks(self, query: str, chunks: List[Dict]) -> str:
+        """
+        Generate a comprehensive report from document chunks
+        """
+        try:
+            # Format chunks for context
+            chunks_text = "\n\n".join([
+                f"Chunk {i+1}:\nPage {chunk.get('page_num', 'N/A')}:\n{chunk['content']}"
+                for i, chunk in enumerate(chunks)
+            ])
+            
+            system_prompt = """
+            Create a comprehensive report from the provided content chunks.
+            
+            Requirements:
+            1. Use clear markdown formatting
+            2. Include section headers
+            3. Cite specific pages when referencing content
+            4. Highlight key findings
+            5. Include a brief summary
+            
+            Format:
+            # Answer Summary
+            [Brief overview]
+            
+            # Detailed Analysis
+            [Main content with citations]
+            
+            # Key Points
+            - [Bullet points of main findings]
+            """
+            
+            user_prompt = f"""
+            Question: {query}
+            
+            Content Chunks:
+            {chunks_text}
+            
+            Generate a comprehensive report addressing the question.
+            """
+            
+            response = self.embeddings_client.chat.completions.create(
+                model="mistralai/mixtral-8x7b-instruct-v0.1",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                max_tokens=1500
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"Error generating report: {str(e)}")
+            raise
+
 # Export the class
 __all__ = ['TextProcessor']

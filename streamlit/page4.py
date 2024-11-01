@@ -200,7 +200,7 @@ def sort_notes(notes: List[Dict], sort_order: str) -> List[Dict]:
         return notes
 
 def submit_question():
-    """Handle question submission and search through notes"""
+    """Handle question submission with clear source indication"""
     try:
         if not st.session_state.question.strip():
             st.warning("Please enter a question")
@@ -210,47 +210,56 @@ def submit_question():
             st.warning("Please select a document first")
             return
             
-        with st.spinner("Searching through notes..."):
-            # Call the search endpoint
+        with st.spinner("Searching..."):
             response = requests.post(
                 f"{FASTAPI_URL}/pdfs/{st.session_state.selected_document}/search-notes",
                 json={
                     "query": st.session_state.question,
                     "top_k": 5,
-                    "pdf_id": st.session_state.selected_document
+                    "pdf_id": st.session_state.selected_document,
+                    "search_all": True
                 }
             )
             
             if response.status_code == 200:
                 results = response.json()
                 matches = results.get("matches", [])
+                source_type = results.get("source")
                 
                 if matches:
-                    st.success(f"Found {len(matches)} matching notes!")
+                    match = matches[0]
                     
-                    # Display matching notes
-                    st.markdown("### Matching Notes")
-                    for note in matches:
-                        with st.expander(f"Note from {format_timestamp(note['timestamp'])}", expanded=True):
-                            # Display original query
-                            st.markdown(f"**Original Query:** {note['query']}")
+                    # Display source message
+                    if source_type == "research_note":
+                        st.success("Research note has the answer")
+                    elif source_type == "document":
+                        st.info("Answer was not found in research note but in the entire document")
+                    
+                    # Display answer
+                    with st.expander("View Answer", expanded=True):
+                        if match.get('content'):
+                            # Parse content sections
+                            text_sections = re.findall(r'\[TEXT\](.*?)\[/TEXT\]', match['content'], re.DOTALL)
+                            image_refs = re.findall(r'\[IMAGE\](.*?)\[/IMAGE\]', match['content'], re.DOTALL)
                             
-                            # Display content
-                            if note.get('content'):
-                                st.markdown(note['content'])
+                            # Display text content
+                            for text in text_sections:
+                                st.markdown(text.strip())
                             
-                            # Display images if available
-                            if note.get('image_paths'):
-                                for image_path in note['image_paths']:
-                                    render_image(image_path)
+                            # Display referenced images
+                            if image_refs and match.get('image_paths'):
+                                st.markdown("### Supporting Images")
+                                for image_path in match['image_paths']:
+                                    if image_path.strip() in str(image_refs):
+                                        render_image(image_path)
                 else:
-                    st.info("No matching notes found for your question.")
+                    st.error("No answer found neither in research note nor full document")
             else:
-                st.error("Failed to search notes. Please try again.")
+                st.error("Search failed. Please try again.")
                 
     except Exception as e:
         logger.error(f"Error in submit_question: {str(e)}")
-        st.error("An error occurred while processing your question")
+        st.error("An error occurred while searching")
 
 
 def normalize_query(query: str) -> str:
