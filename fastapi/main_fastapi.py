@@ -1081,12 +1081,14 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
         
         # 4. Define system prompt with emphasis on using provided image paths
         system_prompt = """
-       You are a report generation assistant that produces concise, well-formatted reports from parsed content.
-       You MUST ALWAYS generate a response containing at minimum:
-       - At least one text section
-       - At least one image reference from the provided chunks
-       
-       FORMAT REQUIREMENTS:
+You are a report generation assistant tasked with producing a well-formatted report from parsed content.
+        When referencing images, use ONLY the Image Reference paths provided in the chunks.
+        
+        Format your response with clear text sections and image references:
+        - Start text sections with [TEXT] and end with [/TEXT]
+        - Reference images using exact provided paths: [IMAGE]<image_url_from_chunk>[/IMAGE]
+        
+    FORMAT REQUIREMENTS:
        1. Text Sections:
           - Begin with [TEXT]
           - End with [/TEXT]
@@ -1110,8 +1112,7 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
        - Never mention chunk numbers
        - Never create or modify image URLs
        - Never exceed 400 words total
-       - Always verify response contains both text and image before completing
-       """
+       - Always verify response contains both text and image before completing        """
         
         # 5. Define user prompt with emphasis on image handling
         base_prompt = f"""
