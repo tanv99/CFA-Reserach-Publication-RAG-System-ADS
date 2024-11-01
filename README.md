@@ -21,15 +21,15 @@ The project automates the data ingestion and processing pipeline for CFA publica
 
 ## Project Resources
 
-Google codelab: [https://codelabs-preview.appspot.com/?file_id=1jphJPxx12pEU5ZX9iGk58KrWBYvTFB6bMzoFP0cu97k#0]
+Google codelab: https://codelabs-preview.appspot.com/?file_id=1jphJPxx12pEU5ZX9iGk58KrWBYvTFB6bMzoFP0cu97k#0
 
-App link (hosted on GCP): [http://35.225.250.5:8501/]
+App link (hosted on GCP): http://35.225.250.5:8501/
 
-Airflow Link (hosted on GCP): [http://35.225.250.5:8080/home]
+Airflow Link (hosted on GCP): http://35.225.250.5:8080/home
 
-Demo Video URL: []
+Demo Video URL: 
 
-Google collab notebook: [https://colab.research.google.com/drive/1-jqj7SBSEZs0Yy58V54IdGMA9b2gZDYd?usp=sharing]
+Google collab notebook: https://colab.research.google.com/drive/1-jqj7SBSEZs0Yy58V54IdGMA9b2gZDYd?usp=sharing
 
 ### Architecture diagram ###
 
@@ -109,27 +109,23 @@ Streamlit: streamlit/.env
 1. Step 1: Clone the Repository
 If you haven’t done so already, clone the repository to your local machine:
 
-```bash
 git clone https://github.com/BigData-Fall2024-Team4/Assignment-3
 cd Assignment-3
 
 2. Step 2: Initialize Airflow
-   ```bash
 cd Airflow
 docker compose up airflow-init
 docker compose up -d
 docker ps
 
 2. Step 2: Initialize Airflow
-   ```bash
-cd Airflow
+ cd Airflow
 docker compose up airflow-init
 docker compose up -d
 docker ps
 Access the Airflow UI at http://localhost:8080
 
 3. Step 3: Running Application:
-   ```bash
 docker compose up --build -d
 FastAPI should now be accessible at http://localhost:8501
 
