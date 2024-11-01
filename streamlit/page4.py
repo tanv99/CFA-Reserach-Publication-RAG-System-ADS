@@ -77,76 +77,94 @@ def format_timestamp(timestamp: str) -> str:
         return str(timestamp)
 
 def render_image(image_path: str):
-    """Render an image from a given path"""
+    """Render an image with consistent styling"""
     try:
         image_url = f"{FASTAPI_URL}{image_path}"
-        logger.info(f"Loading image from: {image_url}")
-        
         response = requests.get(image_url)
         if response.status_code == 200:
             st.image(
                 response.content,
                 use_column_width=True,
-                caption="Document Image"
+                caption="Document Image",
+                output_format="PNG"
             )
-        else:
-            st.warning(f"Could not load image (Status: {response.status_code})")
     except Exception as e:
         logger.error(f"Error rendering image: {str(e)}")
         st.warning("Failed to load image")
 
 def render_note_card(note: Dict):
-    """Render a single note card"""
+    """Render a note card for selected notes section with closed expander by default"""
     try:
         with st.container():
-            # Apply custom styling
-            st.markdown("""
-                <style>
-                .note-card {
-                    border-left: 4px solid #0066cc;
-                    padding: 1rem;
-                    margin: 1rem 0;
-                    background-color: #f8f9fa;
-                    border-radius: 4px;
-                }
-                .note-metadata {
-                    color: #666;
-                    font-size: 0.9rem;
-                    margin-bottom: 0.5rem;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-            
-            # Note header with note_id
             st.markdown(f"""
-                <div class="note-card">
-                    <div class="note-metadata">
-                        <strong>Note ID: {note.get('note_id', 'Unknown')}</strong><br>
-                        📝 Created: {format_timestamp(note.get('timestamp', ''))}<br>
-                        🔍 Query: "{note.get('query', 'No query available')}"
+                <div style="padding: 1rem; background-color: #f8f9fa; border-radius: 4px; margin-bottom: 1rem;">
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Note ID:</strong> {note.get('note_id', 'Unknown')}<br>
+                        <strong>Created:</strong> {format_timestamp(note.get('timestamp', ''))}<br>
+                        <strong>Query:</strong> {note.get('query', 'No query available')}
                     </div>
                 </div>
             """, unsafe_allow_html=True)
             
-            # Note content
+            # Expander closed by default for research notes
             with st.expander("View Note Content", expanded=False):
                 if note.get('content'):
                     st.markdown(note['content'])
                 else:
                     st.info("No text content available")
                 
-                # Display images if available
                 if note.get('image_paths'):
                     for image_path in note['image_paths']:
-                        render_image(image_path)
-            
-            st.markdown("---")
+                        if image_path.strip():
+                            render_image(image_path)
     except Exception as e:
         logger.error(f"Error rendering note card: {str(e)}")
         st.error("Error displaying note")
 
+def render_search_result(note: Dict):
+    """Render a note card for search results section with open expander by default"""
+    try:
+        with st.container():
+            st.markdown("""
+                <style>
+                .search-result {
+                    border-left: 4px solid #28a745;
+                    padding: 1rem;
+                    margin: 1rem 0;
+                    background-color: #f8f9fa;
+                    border-radius: 4px;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+                <div class="search-result">
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Matching Note</strong><br>
+                        <strong>Query:</strong> {note.get('query', 'No query available')}
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # Expander open by default for search results
+            with st.expander("View Matching Content", expanded=True):
+                if note.get('content'):
+                    st.markdown(note['content'])
+                else:
+                    st.info("No text content available")
+                
+                if note.get('image_paths'):
+                    for image_path in note['image_paths']:
+                        if image_path.strip():
+                            render_image(image_path)
+            
+            st.markdown("---")
+    except Exception as e:
+        logger.error(f"Error something: {str(e)}")
+        st.error("Error something")
+
 def sort_notes(notes: List[Dict], sort_order: str) -> List[Dict]:
-    """Sort notes by timestamp with error handling"""
+    """Sort notes by timestamp"""
     try:
         def get_sort_key(note):
             timestamp = note.get('timestamp', '')
@@ -158,7 +176,7 @@ def sort_notes(notes: List[Dict], sort_order: str) -> List[Dict]:
                         return datetime.fromtimestamp(int(timestamp))
                 except:
                     pass
-                return datetime.min  # Fallback for invalid dates
+                return datetime.min
         
         return sorted(
             notes,
@@ -169,21 +187,78 @@ def sort_notes(notes: List[Dict], sort_order: str) -> List[Dict]:
         logger.error(f"Error sorting notes: {str(e)}")
         return notes
 
+def submit_question():
+    """Handle question submission and search through notes"""
+    try:
+        if not st.session_state.question.strip():
+            st.warning("Please enter a question")
+            return
+            
+        if not st.session_state.selected_document:
+            st.warning("Please select a document first")
+            return
+            
+        with st.spinner("Searching through notes..."):
+            # Call the search endpoint
+            response = requests.post(
+                f"{FASTAPI_URL}/pdfs/{st.session_state.selected_document}/search-notes",
+                json={
+                    "query": st.session_state.question,
+                    "top_k": 5,
+                    "pdf_id": st.session_state.selected_document
+                }
+            )
+            
+            if response.status_code == 200:
+                results = response.json()
+                matches = results.get("matches", [])
+                
+                if matches:
+                    st.success(f"Found {len(matches)} matching notes!")
+                    
+                    # Display matching notes
+                    st.markdown("### Matching Notes")
+                    for note in matches:
+                        with st.expander(f"Note from {format_timestamp(note['timestamp'])}", expanded=True):
+                            # Display original query
+                            st.markdown(f"**Original Query:** {note['query']}")
+                            
+                            # Display content
+                            if note.get('content'):
+                                st.markdown(note['content'])
+                            
+                            # Display images if available
+                            if note.get('image_paths'):
+                                for image_path in note['image_paths']:
+                                    render_image(image_path)
+                else:
+                    st.info("No matching notes found for your question.")
+            else:
+                st.error("Failed to search notes. Please try again.")
+                
+    except Exception as e:
+        logger.error(f"Error in submit_question: {str(e)}")
+        st.error("An error occurred while processing your question")
+
+
+def normalize_query(query: str) -> str:
+    """Normalize query string to match server-side normalization"""
+    return ' '.join(query.split())
+
 def show():
-    """Main function to display the research notes page"""
+    """Main function to display the research notes page with reorganized layout"""
     try:
         st.title("Research Notes")
         
         # Initialize page state
-        init_page_state()
-        
-        # Add description
-        st.markdown("""
-            View and manage your saved research notes for each document.
-            Select a document and a specific research note to view its content.
-        """)
-        
-        # Create three columns for document selection, note selection, and filters
+        if 'selected_document' not in st.session_state:
+            st.session_state.selected_document = None
+        if 'selected_note' not in st.session_state:
+            st.session_state.selected_note = None
+        if 'question' not in st.session_state:
+            st.session_state.question = ""
+            
+        # Create three columns for document selection, note selection, and sort order
         col1, col2, col3 = st.columns([2, 2, 1])
         
         with col1:
@@ -202,20 +277,22 @@ def show():
                     st.session_state.selected_document = selected_doc
                 else:
                     st.session_state.selected_document = None
+                    st.session_state.selected_note = None
             else:
                 st.warning("No documents available")
                 return
         
-        # Only show note selection and content if a document is selected
+        # Only show content if a document is selected
         if st.session_state.selected_document:
+            # Fetch notes for the selected document
             notes = fetch_document_notes(st.session_state.selected_document)
             
             if notes:
                 with col2:
-                    # Create note options using note_ids
+                    # Note selector dropdown
                     note_options = ["Select a note", "ALL"] + [
-                        note.get('note_id', f"note_{st.session_state.selected_document}_{idx}")
-                        for idx, note in enumerate(notes)
+                        f"Note {note.get('note_id', idx)}"
+                        for idx, note in enumerate(notes, 1)
                     ]
                     selected_note = st.selectbox(
                         "Select research note",
@@ -229,52 +306,85 @@ def show():
                 
                 with col3:
                     # Sort order selector
-                    st.session_state.sort_order = st.selectbox(
+                    sort_order = st.selectbox(
                         "Sort by",
                         ["Newest First", "Oldest First"],
                         key="notes_sort_order"
                     )
                 
-                # Only display notes if both document and note are selected
+                # First section: Display selected notes
                 if st.session_state.selected_note:
-                    # Sort notes with error handling
-                    sorted_notes = sort_notes(notes, st.session_state.sort_order)
+                    st.markdown("### Selected Research Notes")
+                    sorted_notes = sort_notes(notes, sort_order)
                     
                     if st.session_state.selected_note == "ALL":
                         for note in sorted_notes:
                             render_note_card(note)
                     else:
-                        # Find the specific note by note_id
+                        note_id = st.session_state.selected_note.split("Note ")[-1]
                         selected_note_data = next(
-                            (note for note in sorted_notes if note.get('note_id') == st.session_state.selected_note),
+                            (note for note in sorted_notes if str(note.get('note_id')) == note_id),
                             None
                         )
                         if selected_note_data:
                             render_note_card(selected_note_data)
-                        else:
-                            st.error("Selected note not found")
-                    
-                    # Question input section
-                    st.markdown("### Ask a Question")
-                    col1, col2 = st.columns([4, 1])
-                    with col1:
-                        question = st.text_input(
-                            "Enter your question about this document:",
-                            key="question",
-                            placeholder="Type your question here..."
-                        )
-                    with col2:
-                        st.markdown("<br>", unsafe_allow_html=True)  # Add spacing to align with text input
-                        if st.button("Submit Question"):
-                            submit_question()
                 
+                # Add separator before search section
+                st.markdown("---")
+                
+                # Second section: Search interface
+                st.markdown("### Search Notes")
+                search_col1, search_col2 = st.columns([4, 1])
+                
+                with search_col1:
+                    question = st.text_input(
+                        "Search by question:",
+                        key="question",
+                        placeholder="Enter your question to find matching research notes..."
+                    )
+                
+                with search_col2:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    search_clicked = st.button("Search", type="primary", use_container_width=True)
+                
+                # Third section: Search results (only shown after search)
+                if search_clicked and question.strip():
+                    st.markdown("### Search Results")
+                    normalized_question = ' '.join(question.split())
+                    
+                    # If "ALL" is selected, search through all notes
+                    if st.session_state.selected_note == "ALL":
+                        matching_notes = []
+                        for note in notes:
+                            saved_query = ' '.join(note.get('query', '').split())
+                            if normalized_question.lower().strip() == saved_query.lower().strip():
+                                matching_notes.append(note)
+                        
+                        if matching_notes:
+                            st.success(f"Found {len(matching_notes)} matching notes!")
+                            for match in matching_notes:
+                                render_search_result(match)
+                        else:
+                            st.info("No matching notes found for your question.")
+                            
+                    # If specific note is selected, search only that note
+                    elif st.session_state.selected_note and st.session_state.selected_note != "Select a note":
+                        note_id = st.session_state.selected_note.split("Note ")[-1]
+                        selected_note = next(
+                            (note for note in notes if str(note.get('note_id')) == note_id),
+                            None
+                        )
+                        
+                        if selected_note:
+                            saved_query = ' '.join(selected_note.get('query', '').split())
+                            if normalized_question.lower().strip() == saved_query.lower().strip():
+                                st.success("Found matching note!")
+                                render_search_result(selected_note)
+                            else:
+                                st.info("No match found for the selected note.")
             else:
                 st.info(f"No research notes found for {st.session_state.selected_document}")
                 
     except Exception as e:
         logger.error(f"Error in research notes page: {str(e)}")
-        st.error("An error occurred while loading the research notes page")
-        st.error(str(e))
-
-if __name__ == "__main__":
-    show()
+        st.error("An error occurred while loading the page")
