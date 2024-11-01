@@ -31,6 +31,7 @@ def init_session_state():
 def load_css():
     st.markdown("""
         <style>
+            /* PDF viewer styling */
             .pdf-container {
                 margin: 2rem 0;
             }
@@ -40,13 +41,24 @@ def load_css():
                 height: 800px;
                 border: none;
             }
+            
+            /* Container styling */
+            .doc-selector {
+                margin-bottom: 1rem;
+            }
+            
+            .qa-container {
+                margin-top: 1rem;
+            }
         </style>
     """, unsafe_allow_html=True)
 
 
-def display_pdf_viewer(pdf_name: str):
+def display_pdf_viewer(folder_name: str):
+    """Display PDF from specific folder in S3 bucket"""
     try:
-        response = requests.get(f"{FASTAPI_URL}/pdfs/{pdf_name}/document")
+        # Construct path: bucket_name/folder_name/document.pdf
+        response = requests.get(f"{FASTAPI_URL}/pdfs/{folder_name}/document")
         response.raise_for_status()
         base64_pdf = base64.b64encode(response.content).decode('utf-8')
         
@@ -57,7 +69,7 @@ def display_pdf_viewer(pdf_name: str):
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.download_button("Download PDF", response.content, f"{pdf_name}.pdf", "application/pdf", use_container_width=True)
+            st.download_button("Download PDF", response.content, f"{folder_name}.pdf", "application/pdf", use_container_width=True)
     except requests.RequestException as e:
         st.error(f"Error loading PDF: {str(e)}")
 
@@ -336,30 +348,41 @@ def fetch_pdfs():
         st.error(f"Failed to load PDF list: {str(e)}")
         return []
 
+def fetch_folders():
+    """Fetch only folder titles without loading PDFs"""
+    try:
+        response = requests.get(f"{FASTAPI_URL}/folders/list")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        st.error(f"Failed to load folder list: {str(e)}")
+        return []
+
+
 def show():
     init_session_state()
     load_css()
     
     st.title("Document Q&A Interface")
     
-    # Document selection section
+    # Folder selection section
     st.markdown("<div class='doc-selector'>", unsafe_allow_html=True)
-    pdfs = fetch_pdfs()
-    if not pdfs:
-        st.warning("No documents available")
+    folders = fetch_folders()
+    if not folders:
+        st.warning("No folders available")
         return
     
-    selected_pdf = st.selectbox(
+    selected_folder = st.selectbox(
         "Select a document",
-        options=[""] + [pdf['title'] for pdf in pdfs],
+        options=[""] + [folder['title'] for folder in folders],
         index=0,
-        key="pdf_selector"
+        key="folder_selector"
     )
     st.markdown("</div>", unsafe_allow_html=True)
     
-    if selected_pdf:
-        st.session_state.selected_pdf = selected_pdf
-        display_pdf_viewer(selected_pdf)
+    if selected_folder:
+        st.session_state.selected_folder = selected_folder
+        display_pdf_viewer(selected_folder)
         
         st.markdown("<div class='qa-container'>", unsafe_allow_html=True)
         col1, col2 = st.columns([4, 1])
@@ -373,11 +396,11 @@ def show():
             
         if st.button("Generate Report", use_container_width=True):
             if question:
-                if not st.session_state.extracted_status.get(selected_pdf, False):
-                    if not test_extract_pdf(selected_pdf):
+                if not st.session_state.extracted_status.get(selected_folder, False):
+                    if not test_extract_pdf(selected_folder):
                         st.stop()
                 
-                result = process_query(question, selected_pdf)
+                result = process_query(question, selected_folder)
                 if result and result.get("status") == "success":
                     st.session_state.current_report = result
         

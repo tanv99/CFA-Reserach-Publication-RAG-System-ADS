@@ -106,8 +106,8 @@ def show_navigation():
         if st.sidebar.button("Summary", key="nav_page2", use_container_width=True):
             selected_page = "Summary"
         
-        if st.sidebar.button("Page Three", key="nav_page3", use_container_width=True):
-            selected_page = "Page Three"
+        if st.sidebar.button("Document Q&A System", key="nav_page3", use_container_width=True):
+            selected_page = "Document Q&A System"
         
         if st.sidebar.button("Research Notes", key="nav_page4", use_container_width=True):
             selected_page = "Research Notes"

@@ -54,13 +54,41 @@ def load_css():
         </style>
     """, unsafe_allow_html=True)
 
+def fetch_folders():
+    """Fetch only folder titles without loading PDFs"""
+    try:
+        response = requests.get(f"{FASTAPI_URL}/folders/list")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        st.error(f"Failed to load folder list: {str(e)}")
+        return []
+
 def show():
     load_css()
+    
+    # Folder selection section
+    st.markdown("<div class='doc-selector'>", unsafe_allow_html=True)
+    folders = fetch_folders()
+    if not folders:
+        st.warning("No folders available")
+        return
+    
+    selected_folder = st.selectbox(
+        "Select a document",
+        options=[""] + [folder['title'] for folder in folders],
+        index=0,
+        key="folder_selector"
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    if selected_folder:
+        st.session_state.pdf_for_summary = selected_folder
     
     pdf_title = st.session_state.get('pdf_for_summary')
     
     if not pdf_title:
-        st.info("Please select a PDF from the PDF Selection page first")
+        st.info("Please select a PDF from the dropdown above")
         return
     
     try:

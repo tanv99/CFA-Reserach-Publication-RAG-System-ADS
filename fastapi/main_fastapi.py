@@ -1426,3 +1426,37 @@ async def search_notes(folder_name: str, query: SearchQuery):
     except Exception as e:
         logger.error(f"Error in search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+########################################################################################
+
+@app.get("/folders/list", response_model=List[Dict[str, str]])
+async def list_folders():
+    """List all folders in the S3 bucket"""
+    try:
+        s3_client = get_s3_client()
+        
+        # List objects with delimiter to get "folders"
+        response = s3_client.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Delimiter='/'
+        )
+        
+        folders = []
+        
+        # Process common prefixes (folders)
+        if 'CommonPrefixes' in response:
+            for prefix in response['CommonPrefixes']:
+                # Remove trailing slash and get folder name
+                folder_name = prefix['Prefix'].rstrip('/')
+                folders.append({
+                    "title": folder_name,
+                    "id": folder_name
+                })
+        
+        return folders
+        
+    except ClientError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error accessing S3: {str(e)}"
+        )
