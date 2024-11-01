@@ -104,15 +104,18 @@ ASSIGNMENT-3/
 Each component has its own .env file.
 
 Airflow: Airflow/.env
+
 FastAPI: fastapi/.env
+
 Streamlit: streamlit/.env
 
 ### Steps to run the application
-
 **Step 1: Clone the Repository**
+
 If you haven’t done so already, clone the repository to your local machine:
 
 git clone https://github.com/BigData-Fall2024-Team4/Assignment-3
+
 cd Assignment-3
 
 **Step 2: Initialize Airflow**
