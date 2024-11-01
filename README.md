@@ -115,31 +115,31 @@ cd Assignment-3
 
 **Step 2: Initialize Airflow**
 
-cd Airflow
+- cd Airflow
 
-docker compose up airflow-init
+- docker compose up airflow-init
 
-docker compose up -d
+- docker compose up -d
 
-docker ps
+- docker ps
 
 **Step 2: Initialize Airflow**
    
- cd Airflow
+ - cd Airflow
  
-docker compose up airflow-init
+- docker compose up airflow-init
 
-docker compose up -d
+- docker compose up -d
 
-docker ps
+- docker ps
 
-Access the Airflow UI at http://localhost:8080
+- Access the Airflow UI at http://localhost:8080
 
 **Step 3: Running Application:**
    
-docker compose up --build -d
+- docker compose up --build -d
 
-FastAPI should now be accessible at http://localhost:8501
+- Streamlit application should now be accessible at http://localhost:8501
 
 ### Contributions
 
