@@ -114,19 +114,29 @@ cd Assignment-3
 
 2. Step 2: Initialize Airflow
 cd Airflow
+
 docker compose up airflow-init
+
 docker compose up -d
+
 docker ps
 
 2. Step 2: Initialize Airflow
+   
  cd Airflow
+ 
 docker compose up airflow-init
+
 docker compose up -d
+
 docker ps
+
 Access the Airflow UI at http://localhost:8080
 
 3. Step 3: Running Application:
+   
 docker compose up --build -d
+
 FastAPI should now be accessible at http://localhost:8501
 
 ### Contributions
