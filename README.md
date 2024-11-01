@@ -106,13 +106,15 @@ FastAPI: fastapi/.env
 Streamlit: streamlit/.env
 
 ### Steps to run the application
-1. Step 1: Clone the Repository
+
+**Step 1: Clone the Repository**
 If you haven’t done so already, clone the repository to your local machine:
 
 git clone https://github.com/BigData-Fall2024-Team4/Assignment-3
 cd Assignment-3
 
-2. Step 2: Initialize Airflow
+**Step 2: Initialize Airflow**
+
 cd Airflow
 
 docker compose up airflow-init
@@ -121,7 +123,7 @@ docker compose up -d
 
 docker ps
 
-2. Step 2: Initialize Airflow
+**Step 2: Initialize Airflow**
    
  cd Airflow
  
@@ -133,7 +135,7 @@ docker ps
 
 Access the Airflow UI at http://localhost:8080
 
-3. Step 3: Running Application:
+**Step 3: Running Application:**
    
 docker compose up --build -d
 
