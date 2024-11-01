@@ -1081,38 +1081,21 @@ async def search_and_process_chunks(folder_name: str, query: SearchQuery):
         
         # 4. Define system prompt with emphasis on using provided image paths
         system_prompt = """
-You are a report generation assistant tasked with producing a well-formatted report from parsed content.
+        You are a report generation assistant tasked with producing a well-formatted report from parsed content.
         When referencing images, use ONLY the Image Reference paths provided in the chunks.
         
         Format your response with clear text sections and image references:
         - Start text sections with [TEXT] and end with [/TEXT]
         - Reference images using exact provided paths: [IMAGE]<image_url_from_chunk>[/IMAGE]
         
-    FORMAT REQUIREMENTS:
-       1. Text Sections:
-          - Begin with [TEXT]
-          - End with [/TEXT]
-          - Must use markdown formatting
-          - Keep each section between 50-150 words
-          - Maximum 3 text sections total
-       
-       2. Image References:
-          - Format: [IMAGE]<exact_image_url_from_chunk>[/IMAGE]
-          - Place immediately after relevant text
-          - Use only image paths provided in chunks
-          - Include 1-3 images total
-       
-       3. Data Formatting:
-          - Present numbers in clear, readable format
-          - Use tables for comparing multiple values
-          - Include units where applicable
-       
-       STRICT RULES:
-       - Never return an empty response
-       - Never mention chunk numbers
-       - Never create or modify image URLs
-       - Never exceed 400 words total
-       - Always verify response contains both text and image before completing        """
+        Requirements:
+        - Include atleast one images provided in the chunks
+        - Use the exact image URLs provided in the chunks
+        - DO NOT mention chunk numbers in your responses
+        - Use markdown formatting in text blocks
+        - Format numerical data clearly
+        - Place images immediately after their relevant text sections
+       """
         
         # 5. Define user prompt with emphasis on image handling
         base_prompt = f"""
