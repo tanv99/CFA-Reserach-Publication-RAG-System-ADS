@@ -32,6 +32,7 @@ The project automates the data ingestion and processing pipeline for CFA publica
 - **Airflow**: Orchestrates the pipeline tasks, automating web scraping, data processing, and loading to ensure the pipeline is consistent and up-to-date.
 - **AWS S3**: Stores PDF files, images, and metadata securely, ensuring easy retrieval and backup of ingested data.
 - **Snowflake**: A cloud database for structured data storage, handling metadata and document details for easy querying.
+- **RAG**: It enhances the system's ability to generate contextually accurate summaries and responses
 
 ### Architecture diagram ###
 
@@ -134,16 +135,7 @@ cd Assignment-3
 
 - Streamlit application should now be accessible at http://localhost:8501
 
-### Contributions
-
-| Name                            | Percentage Contribution |
-| ------------------------------- | ----------------------- |
-| Sarthak Somvanshi               | 33.33% (User login, Q/A System, Report Generation)                    |
-| Yuga Kanse                      | 33.33%  (Summary Generation, Search & Research note indexing functionality)                  |
-| Tanvi Inchanalkar               | 33.33% (Airflow Pipelines-AWS & Snowflake, GCP Deployment, Documentation)                   |
-
-### Additional Notes
-WE ATTEST THAT WE HAVEN’T USED ANY OTHER STUDENTS’ WORK IN OUR ASSIGNMENT AND ABIDE BY THE POLICIES LISTED IN THE STUDENT HANDBOOK. 
+ 
 
 
 
