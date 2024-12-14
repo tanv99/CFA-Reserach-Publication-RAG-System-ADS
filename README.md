@@ -2,17 +2,12 @@
 
 ## Project Resources
 
-Google codelab: https://codelabs-preview.appspot.com/?file_id=1jphJPxx12pEU5ZX9iGk58KrWBYvTFB6bMzoFP0cu97k#0
+Google codelab: https://codelabs-preview.appspot.com/?file_id=1QdnQ4bhGEMLnumvYofOUmC0TY0ChqccX5FRLZ7DpbKE#0
 
-Streamlit App link (hosted on GCP): http://35.225.250.5:8501/
+Streamlit App link (hosted on GCP):http://35.243.197.25:8501/
 
-Airflow Link (hosted on GCP): http://35.225.250.5:8080/home
+Demo Video URL: https://youtu.be/8IM0TjIXMRo
 
-FastAPI Link (hosted on GCP): http://35.225.250.5:8000
-
-Demo Video URL: https://drive.google.com/file/d/1kOeyb4jt2pzpOXBe0-YgoAaBJ-YVFK21/view?usp=sharing
-
-Google collab notebook: https://colab.research.google.com/drive/1-jqj7SBSEZs0Yy58V54IdGMA9b2gZDYd?usp=sharing
 
 ### Goal of the Project
 This project aims to build an automated system for extracting, processing, and analyzing research publications from the CFA Institute Research Foundation. The system combines web scraping, document processing, and AI-driven search and retrieval to create a user-friendly platform for exploring and analyzing financial research documents.
@@ -32,6 +27,7 @@ The project automates the data ingestion and processing pipeline for CFA publica
 - **Airflow**: Orchestrates the pipeline tasks, automating web scraping, data processing, and loading to ensure the pipeline is consistent and up-to-date.
 - **AWS S3**: Stores PDF files, images, and metadata securely, ensuring easy retrieval and backup of ingested data.
 - **Snowflake**: A cloud database for structured data storage, handling metadata and document details for easy querying.
+- **RAG**:  It enhances the system's ability to generate contextually accurate summaries and responses
 
 ### Architecture diagram ###
 
@@ -134,16 +130,9 @@ cd Assignment-3
 
 - Streamlit application should now be accessible at http://localhost:8501
 
-### Contributions
 
-| Name                            | Percentage Contribution |
-| ------------------------------- | ----------------------- |
-| Sarthak Somvanshi               | 33.33% (User login, Q/A System, Report Generation)                    |
-| Yuga Kanse                      | 33.33%  (Summary Generation, Search & Research note indexing functionality)                  |
-| Tanvi Inchanalkar               | 33.33% (Airflow Pipelines-AWS & Snowflake, GCP Deployment, Documentation)                   |
 
-### Additional Notes
-WE ATTEST THAT WE HAVEN’T USED ANY OTHER STUDENTS’ WORK IN OUR ASSIGNMENT AND ABIDE BY THE POLICIES LISTED IN THE STUDENT HANDBOOK. 
+
 
 
 
