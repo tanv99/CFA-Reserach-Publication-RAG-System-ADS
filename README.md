@@ -1,4 +1,4 @@
-# CFA Institute Research Foundation Publications Analysis System
+# CFA-Reserach-Publication-RAG-System
 
 ## Project Resources
 
